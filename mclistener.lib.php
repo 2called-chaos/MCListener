@@ -28,7 +28,7 @@ class MCListener
   public $admins = array();
   public $trusted = array();
   public $playerSettings = array();
-  public $defaultGiveAmount = 25;
+  public $defaultGiveAmount = 1;
 
   // {
     public $itemmap = array(
