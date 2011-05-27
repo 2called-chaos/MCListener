@@ -458,6 +458,9 @@ class MCListener
     $this->size = filesize($this->file);
 
     $this->log('MCListener ' . self::VERSION . ' started');
+    foreach($this->admins as $admin) {
+      $this->pm($admin, 'MCListener ' . self::VERSION . ' started');
+    }
     $this->_watchLog();
 
     return $this;
