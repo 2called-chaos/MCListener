@@ -56,6 +56,7 @@ class MCListener
   {
     // get config file contents
     $cfg = file($this->mcl_dir . '/cfg_itemmap.ini');
+    $added = 0;
     
     // parse itemmap
     foreach ($cfg as $lno => $line) {
@@ -67,7 +68,6 @@ class MCListener
       $parts = explode('<=>', $line);
       $id = trim($parts[0]);
       $aliases = explode(',', $parts[1]);
-      $added = 0;
       
       foreach ($aliases as $alias) {
         $alias = trim($alias);
@@ -82,7 +82,7 @@ class MCListener
       }
     }
     
-    $this->log('Added ' . $added . ' items to the itemmap!');
+    $this->log('Added ' . $added . ' aliases to the itemmap!');
     
     // freeing space
     unset($cfg);
@@ -92,6 +92,7 @@ class MCListener
   {
     // get config file contents
     $cfg = file($this->mcl_dir . '/cfg_kits.ini');
+    $added = 0;
     
     // parse kits
     foreach ($cfg as $lno => $line) {
@@ -103,7 +104,6 @@ class MCListener
       $parts = explode('=>', $line);
       $id = trim($parts[0]);
       $kit = explode('&', $parts[1]);
-      $added = 0;
 
       // check for double kits
       if(array_key_exists($id, $this->kits)) {
