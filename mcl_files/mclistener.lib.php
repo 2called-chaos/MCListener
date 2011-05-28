@@ -298,17 +298,28 @@ class MCListener
     return $this->playerSettings[$user];
   }
 
-  public function give($user, $item, $amount = null)
+  public function give($user, $item = null, $amount = null)
   {
+    if(is_null($item)) {
+      $this->pm($user, 'You have to declare an item ID');
+      return false;
+    }
+
+    if(is_numeric($item)) {
+      // ok all fine
+    } elseif(array_key_exists($item, $this->kits)) {
+      // kit
+      $this->giveKit($user, $item);
+      return;
+    } elseif (array_key_exists($item, $this->itemmap)) {
+      // itemmap
+      $item = $this->itemmap[$item];
+      $this->give($user, $item, $amount);
+    }
+    
     // block bedrock
     if($item == 7) {
       $this->pm($user, 'no, not this one ;)');
-      return;
-    }
-    
-    // detect kit
-    if(substr($item, 0, 1) == '#') {
-      $this->giveKit($user, $item);
       return;
     }
     
@@ -333,10 +344,12 @@ class MCListener
     $times = floor($amount / 64);
     $lamount = $amount - ($times * 64);
 
+    // give stacks
     for ($i=0; $i < $times; $i++) {
       $this->mcexec('give ' . $user . ' ' . $item . ' 64');
     }
 
+    // give rest
     if($lamount) {
       $this->mcexec('give ' . $user . ' ' . $item . ' ' . $lamount);
     }
@@ -351,27 +364,11 @@ class MCListener
   
   public function giveKit($user, $kit)
   {
-    $items = array();
-    
-    // parse kit variable
-    $kit = substr($kit, 1);
-    $chunks = explode('+', $kit);
-    
-    foreach($chunks as $c) {
-      $c = trim($c);
-      $val = explode(':', $c);
-      $items[$val[0]] = $val[1];
-    }
+    $items = $this->kits[$kit];
     
     // give items
-    foreach($items as $item => $amount) {
-      if(is_numeric($item)) {
-        $this->give($user, $item, $amount);
-      } elseif (array_key_exists($item, $this->itemmap)) {
-        $this->give($user, $this->itemmap[$item], $amount);
-      } else {
-        $this->pm($user, 'This item ID in this kit is wrong.');
-      }
+    foreach($items as $item) {
+      $this->give($user, $item['item'], $item['amount']);
     }
   }
 
@@ -442,17 +439,7 @@ class MCListener
             $amount = $params[1];
           }
 
-          if(array_key_exists(0, $params)) {
-            if(is_numeric($params[0])) {
-              $item = $params[0];
-              $this->give($user, $item, $amount);
-            } elseif (array_key_exists($params[0], $this->itemmap)) {
-              $item = $this->itemmap[$params[0]];
-              $this->give($user, $item, $amount);
-            } else {
-              $this->pm($user, 'You have to declare an item ID');
-            }
-          }
+          $this->give($user, isset($params[0]) ? $params[0] : null, $amount);
         } else {
           $this->deny($user);
         }
