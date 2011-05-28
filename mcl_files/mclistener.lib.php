@@ -45,6 +45,7 @@ class MCListener
     $this->setDelay(0.5);
     $this->setScreenName('minecraft');
     $this->setPrefix('!');
+    $this->mcl_dir = $this->base_dir . $this->mcl_dir;
     
     // run initializers
     $this->_initItemMap();
@@ -54,7 +55,7 @@ class MCListener
   protected function _initItemMap()
   {
     // get config file contents
-    $cfg = file($mcl_dir . '/cfg_itemmap.ini');
+    $cfg = file($this->mcl_dir . '/cfg_itemmap.ini');
     
     // parse itemmap
     foreach ($cfg as $lno => $line) {
@@ -66,20 +67,22 @@ class MCListener
       $parts = explode('<=>', $line);
       $id = trim($parts[0]);
       $aliases = explode(',', $parts[1]);
+      $added = 0;
       
       foreach ($aliases as $alias) {
         $alias = trim($alias);
         
         // check for double contents
         if(array_key_exists($alias, $this->itemmap)) {
-          $this->error('warning', 'double alias ' . $alias . ' in itemmap (near line ' . $lno . ')!');
+          $this->error('warning', 'double alias ' . $alias . ' in itemmap (near line ' . ($lno + 1) . ')!');
         }
         
         $this->itemmap[$alias] = $id;
+        $added++;
       }
     }
     
-    $this->log('Added ' . count($cfg) . ' items to the itemmap!');
+    $this->log('Added ' . $added . ' items to the itemmap!');
     
     // freeing space
     unset($cfg);
@@ -88,7 +91,7 @@ class MCListener
   protected function _initItemKits()
   {
     // get config file contents
-    $cfg = file($mcl_dir . '/cfg_kits.ini');
+    $cfg = file($this->mcl_dir . '/cfg_kits.ini');
     
     // parse kits
     foreach ($cfg as $lno => $line) {
@@ -100,10 +103,11 @@ class MCListener
       $parts = explode('=>', $line);
       $id = trim($parts[0]);
       $kit = explode('&', $parts[1]);
+      $added = 0;
 
       // check for double kits
       if(array_key_exists($id, $this->kits)) {
-        $this->error('warning', 'double kit ' . $id . ' (near line ' . $lno . ')!');
+        $this->error('warning', 'double kit ' . $id . ' (near line ' . ($lno + 1) . ')!');
       }
       
       // parse kit
@@ -125,9 +129,10 @@ class MCListener
       }
       
       $this->kits[$id] = $record;
+      $added++;
     }
     
-    $this->log('Loaded ' . count($cfg) . ' kits!');
+    $this->log('Loaded ' . $added . ' kits!');
     
     // freeing space
     unset($cfg);
@@ -135,7 +140,8 @@ class MCListener
   
   public function error($level, $message)
   {
-    die("\n\n[WARNING] " + $message);
+    echo("\n[WARNING] " . $message . "\n");
+    die;
   }
 
   public function setDelay($delay)
@@ -314,7 +320,6 @@ class MCListener
     } elseif (array_key_exists($item, $this->itemmap)) {
       // itemmap
       $item = $this->itemmap[$item];
-      $this->give($user, $item, $amount);
     }
     
     // block bedrock
