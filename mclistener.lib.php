@@ -378,6 +378,8 @@ class MCListener
     set_time_limit(0);
     clearstatcache();
     date_default_timezone_set("Europe/Berlin");
+
+    // set defaults
     $this->setDelay(0.5);
     $this->setScreenName('minecraft');
     $this->setPrefix('!');
