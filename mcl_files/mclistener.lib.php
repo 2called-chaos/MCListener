@@ -127,7 +127,7 @@ class MCListener
       $this->kits[$id] = $record;
     }
     
-    $this->log('')
+    $this->log('Loaded ' . count($cfg) . ' kits!');
     
     // freeing space
     unset($cfg);
