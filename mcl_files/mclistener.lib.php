@@ -79,7 +79,7 @@ class MCListener
       }
     }
     
-    $this->log('')
+    $this->log('Added ' . count($cfg) . ' items to the itemmap!');
     
     // freeing space
     unset($cfg);
