@@ -306,20 +306,18 @@ class MCListener
 
   public function give($user, $item = null, $amount = null)
   {
-    if(is_null($item)) {
-      $this->pm($user, 'You have to declare an item ID');
-      return false;
-    }
-
     if(is_numeric($item)) {
       // ok all fine
     } elseif(array_key_exists($item, $this->kits)) {
       // kit
       $this->giveKit($user, $item);
       return;
-    } elseif (array_key_exists($item, $this->itemmap)) {
+    } elseif (!empty($item) && array_key_exists($item, $this->itemmap)) {
       // itemmap
       $item = $this->itemmap[$item];
+    } else {
+      $this->pm($user, 'You have to declare an item ID');
+      return false;
     }
     
     // block bedrock
