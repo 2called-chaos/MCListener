@@ -13,6 +13,9 @@ class MCListener
   public $screen = null;
   public $prefix = null;
 
+  public $base_dir = '/home/mc/one';
+  public $mcl_dir = '/mcl_files';
+
   public $file = null;
   public $handle = null;
   public $mtime = null;
@@ -29,7 +32,8 @@ class MCListener
   public $trusted = array();
   public $playerSettings = array();
   public $defaultGiveAmount = 1;
-
+  public $itemmap = array();
+  public $kits = array();
 
   public function __construct()
   {
@@ -41,6 +45,97 @@ class MCListener
     $this->setDelay(0.5);
     $this->setScreenName('minecraft');
     $this->setPrefix('!');
+    
+    // run initializers
+    $this->_initItemMap();
+    $this->_initItemKits();
+  }
+  
+  protected function _initItemMap()
+  {
+    // get config file contents
+    $cfg = file($mcl_dir . '/cfg_itemmap.ini');
+    
+    // parse itemmap
+    foreach ($cfg as $lno => $line) {
+      // skip comment lines
+      if(substr($line, 0, 1) == '#') {
+        continue;
+      }
+      
+      $parts = explode('<=>', $line);
+      $id = trim($parts[0]);
+      $aliases = explode(',', $parts[1]);
+      
+      foreach ($aliases as $alias) {
+        $alias = trim($alias);
+        
+        // check for double contents
+        if(array_key_exists($alias, $this->itemmap)) {
+          $this->error('warning', 'double alias ' . $alias . ' in itemmap (near line ' . $lno . ')!');
+        }
+        
+        $this->itemmap[$alias] = $id;
+      }
+    }
+    
+    $this->log('')
+    
+    // freeing space
+    unset($cfg);
+  }
+  
+  protected function _initItemKits()
+  {
+    // get config file contents
+    $cfg = file($mcl_dir . '/cfg_kits.ini');
+    
+    // parse kits
+    foreach ($cfg as $lno => $line) {
+      // skip comment lines
+      if(substr($line, 0, 1) == '#') {
+        continue;
+      }
+      
+      $parts = explode('=>', $line);
+      $id = trim($parts[0]);
+      $kit = explode('&', $parts[1]);
+
+      // check for double kits
+      if(array_key_exists($id, $this->kits)) {
+        $this->error('warning', 'double kit ' . $id . ' (near line ' . $lno . ')!');
+      }
+      
+      // parse kit
+      $record = array();
+      foreach ($kit as $items) {
+        $items = explode(':', trim($items));
+        
+        if(count($items) > 1) {
+          $record[] = array(
+            'item' => $items[0],
+            'amount' => $items[1],
+          );
+        } else {
+          $record[] = array(
+            'item' => $items[0],
+            'amount' => $this->defaultGiveAmount,
+          );
+        }
+      }
+      
+      $this->kits[$id] = $record;
+    }
+    
+    $this->log('')
+    
+    // freeing space
+    unset($cfg);
+  }
+  
+  public function error($level, $message)
+  {
+    die("\n\n[WARNING] " + $message);
   }
 
   public function setDelay($delay)
