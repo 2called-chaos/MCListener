@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha)';
+  const VERSION = '0.1 (alpha build 161)';
   
   public $delay = null;
   public $screen = null;
@@ -428,7 +428,67 @@ class MCListener
           $this->getUser($user)->settings->defaultGive = $params[0];
           $this->pm($user, 'Your default give amount was set to > ' . $params[0] . ' <!');
         } else {
-          $this->pm($user, 'You need to declare a number as default give amount!');
+          if(isset($this->getUser($user)->settings->defaultGive)) {
+            $this->pm($user, 'Your default give amount is > ' . $this->getUser($user)->settings->defaultGive . ' <!');
+          } else {
+            $this->pm($user, 'Your default give amount is > ' . $this->defaultGiveAmount . ' <!');
+          } 
+        }
+      break;
+
+      ##########
+
+      case 'getid':
+        if(!count($params)) {
+          $this->pm($user, 'You have to declare an alias!');
+        } else {
+          if(!array_key_exists($params[0], $this->itemmap)) {
+            $this->pm($user, 'The alias >  ' . $params[0] . ' < was not found!');
+          } else {
+            $this->pm($user, 'The ID for ' . $params[0] . ' is ' . $this->itemmap[$params[0]]);
+          }
+        }
+      break;
+      
+      ##########
+
+      case 'getalias':
+      case 'getaliases':
+        if(!count($params) || !is_numeric($params[0])) {
+          $this->pm($user, 'You have to declare an item ID!');
+        } else {
+          $aliases = array();
+          foreach($this->itemmap as $alias => $id) {
+            if($id == $params[0]) {
+              $aliases[] = $alias;
+            }
+          }
+          
+          if(!count($aliases)) {
+            $this->pm($user, 'There is no alias for ID ' . $params[0] . '!');
+          } else {
+            if(count($aliases) < 6) {
+              $this->pm($user, 'The aliases for ID are: ' . implode(', ', $aliases));
+            } else {
+              $break = false;
+              while(true) {
+                $tmparr = array();
+                for ($i=0; $i < 5; $i++) { 
+                  $tmparr[] = array_shift($aliases);
+                  
+                  if(!count($aliases)) {
+                    $break = true;
+                    break;
+                  }
+                }
+                $this->pm($user, 'The aliases for ID are: ' . implode(', ', $tmparr));
+                
+                if($break) {
+                  break;
+                }
+              }
+            }
+          }
         }
       break;
 
@@ -506,7 +566,8 @@ class MCListener
       case 'help':
       case '?':
         $this->pm($user, 'Available commands:');
-        $this->pm($user, '!help !ping !day !night !dirt !tp !rails !give !op !deop');
+        $this->pm($user, '!help !ping !day !night !dirt !tp !rails !give !op !deop !defaultgive !getid !getalias');
+        // $this->pm($user, '');
       break;
 
       ##########
