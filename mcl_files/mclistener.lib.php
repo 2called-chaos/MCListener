@@ -431,6 +431,12 @@ class MCListener
 
       ##########
 
+      case 'midday':
+        $this->mcexec('time set 6000');
+      break;
+
+      ##########
+
       case 'dirt':
         if($this->isTrusted($user)) {
           $this->give($user, 3, 64);
@@ -584,8 +590,9 @@ class MCListener
       case 'help':
       case '?':
         $this->pm($user, 'Available commands:');
-        $this->pm($user, '!help !ping !day !night !dirt !tp !rails');
+        $this->pm($user, '!help !ping !day !midday !night !dirt !tp !rails');
         $this->pm($user, ' !give !op !deop !defaultgive !getid !getalias');
+        // $this->pm($user, ' ');
       break;
 
       ##########
