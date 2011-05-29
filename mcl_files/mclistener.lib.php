@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 181)';
+  const VERSION = '0.1 (alpha build 206)';
   
   public $delay = null;
   public $screen = null;
@@ -28,6 +28,9 @@ class MCListener
   public $logfile = null;
   public $argv = null;
   public $tmp = array();
+  
+  public $timemode = 1; // -1 night, 0 = normal, 1 = day
+  public $timemode_timer = 0;
 
   public $admins = array();
   public $trusted = array();
@@ -252,6 +255,17 @@ class MCListener
       $this->cmtime = filemtime($this->file);
       $this->csize = filesize($this->file);
 
+      // timemode
+      if($this->timemode != 0) {
+        if((time() - $this->timemode_timer) > 120) {
+          switch($this->timemode) {
+            case -1: $this->mcexec('time set 17000'); break;
+            case 1: $this->mcexec('time set 5000'); break;
+          }
+          $this->timemode_timer = time();
+        }
+      }
+
       // nothing changed, sleep and wait for new data
       if ($this->mtime == $this->cmtime) {
         usleep($this->delay);
@@ -306,6 +320,13 @@ class MCListener
   public function pm($user, $message)
   {
     $this->mcexec('tell ' . $user . ' ' . $message);
+
+    return $this;
+  }
+
+  public function say($message)
+  {
+    $this->mcexec('say  ' . $message);
 
     return $this;
   }
@@ -433,6 +454,43 @@ class MCListener
 
       case 'midday':
         $this->mcexec('time set 6000');
+      break;
+
+      ##########
+
+      case 'time':
+        if($this->isAdmin($user)) {
+          if(count($params)) {
+            if(is_numeric($params[0])) {
+              $this->mcexec('time set ' . $params[0]);
+            } else {
+              switch($params[0]) {
+                case 'day': 
+                  $this->timemode_timer = 0;
+                  $this->timemode = 1;
+                  $this->say("Daymode enabled!");
+                break;
+                case 'normal': 
+                  $this->timemode_timer = 0;
+                  $this->timemode = 0;
+                  $this->say("Normal time now.");
+                break;
+                case 'night': 
+                  $this->timemode_timer = 0;
+                  $this->timemode = -1;
+                  $this->say("Nightmode enabled!");
+                break;
+                default:
+                  $this->pm($user, "Not valid value passed!");
+                break;
+              }
+            }
+          } else {
+            $this->pm($user, "You have to pass a value! integer or timemode");
+          }
+        } else {
+          $this->deny($user);
+        }
       break;
 
       ##########
