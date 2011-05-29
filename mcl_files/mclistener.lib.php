@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 161)';
+  const VERSION = '0.1 (alpha build 181)';
   
   public $delay = null;
   public $screen = null;
@@ -41,9 +41,11 @@ class MCListener
     set_time_limit(0);
     clearstatcache();
     date_default_timezone_set("Europe/Berlin");
-
+    
     $this->argv = $argv;
+    $this->_handleSingleton();
     $this->_handleCLI();
+    
     // set defaults
     $this->setDelay(0.5);
     $this->setScreenName('minecraft');
@@ -582,8 +584,8 @@ class MCListener
       case 'help':
       case '?':
         $this->pm($user, 'Available commands:');
-        $this->pm($user, '!help !ping !day !night !dirt !tp !rails !give !op !deop !defaultgive !getid !getalias');
-        // $this->pm($user, '');
+        $this->pm($user, '!help !ping !day !night !dirt !tp !rails');
+        $this->pm($user, ' !give !op !deop !defaultgive !getid !getalias');
       break;
 
       ##########
