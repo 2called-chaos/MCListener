@@ -43,6 +43,7 @@ class MCListener
     date_default_timezone_set("Europe/Berlin");
 
     $this->argv = $argv;
+    $this->_handleCLI();
     // set defaults
     $this->setDelay(0.5);
     $this->setScreenName('minecraft');
@@ -52,6 +53,19 @@ class MCListener
     // run initializers
     $this->_initItemMap();
     $this->_initItemKits();
+  }
+  protected function _handleCLI()
+  {
+    // if(isset($this->argv[1])) {
+    //   switch($this->argv[1]) {
+    //     case '':
+    //       
+    //       die;
+    //     break;
+    //   }
+    // } else {
+    //   
+    // }
   }
   
   protected function _initItemMap()
