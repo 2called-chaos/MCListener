@@ -26,6 +26,7 @@ class MCListener
 
   public $loghandle = null;
   public $logfile = null;
+  public $argv = null;
   public $tmp = array();
 
   public $admins = array();
@@ -35,12 +36,13 @@ class MCListener
   public $itemmap = array();
   public $kits = array();
 
-  public function __construct()
+  public function __construct($argv)
   {
     set_time_limit(0);
     clearstatcache();
     date_default_timezone_set("Europe/Berlin");
 
+    $this->argv = $argv;
     // set defaults
     $this->setDelay(0.5);
     $this->setScreenName('minecraft');

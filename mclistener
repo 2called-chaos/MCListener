@@ -7,7 +7,7 @@ require_once("mcl_files/mclistener.lib.php");
 // = THIS IS THE CURRENT CONFIG PART =
 // ===================================
 
-$listener = new MCListener;
+$listener = new MCListener($argv);
 $listener
   // sets the delay in seconds to wait for the script to recheck for changes. Lower values will cause higher CPU load (0.25 - 0.5 is recommended)
   // default: 0.5
