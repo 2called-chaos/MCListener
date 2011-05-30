@@ -1,41 +1,11 @@
 #!/usr/bin/env php
 <?php
 
+// define base directory
+define('MC_PATH', realpath(dirname(__FILE__)));
+
+// include mclistener
 require_once("mcl_files/lib/mclistener.php");
 
-// ===================================
-// = THIS IS THE CURRENT CONFIG PART =
-// ===================================
-
+// run
 $listener = new MCListener($argv);
-$listener
-  // sets the delay in seconds to wait for the script to recheck for changes. Lower values will cause higher CPU load (0.25 - 0.5 is recommended)
-  // default: 0.5
-  # ->setDelay(0.5)
-
-  // the name of the screen where the server is running in. It is needed to push commands into the minecraft console.
-  // default: minecraft
-  # ->setScreenName('minecraft')
-
-  // sets the prefix to call commands (to avoid double commands caused of other mods, etc.)
-  // WARNING: / (slash) wont work as this is the default command prefix of minecraft
-  // default: !
-  # ->setPrefix('!')
-
-  // Add names of admins. These players wont get op privileges by default but they can call !op and !deop to easily remove their rights (to test spawn related things, avoid console messages, etc.)
-  ->addAdmin('Notch')
-  ->addAdmin('2called_chaos') // that's me :D
-
-  // Add names of trusted players. These players are able to call kit commands (not right in the moment, right system is not really clear at the moment)
-  ->addTrusted('TrustMe')
-  ->addTrusted('Me2')
-
-  // enables logging of called commands and other information (file must not exists but the directory has then to be writable by the script to create the file)
-  // comment this line will prevent logging
-  ->enableLogging('/home/mc/one/mclistener.log')
-
-  // the server.log file which should be observed (the script won't get out of this function unless it occurs an error or the script dies for other reasons)
-  ->observe('/home/mc/one/server.log')
-
-  // more or less useless but I get no semicolon conflicts while moving lines around or comment/uncomment them
-  ->stop();

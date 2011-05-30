@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 298)';
+  const VERSION = '0.1 (alpha build 319)';
 
   public $args = array();
   public $config = null;
@@ -36,7 +36,7 @@ class MCListener
   // ==========
   protected function _loadYML($file)
   {
-    require_once($this->config->mcl_dir . '/lib/sfYaml/sfYaml.php');
+    require_once(MC_PATH . '/mcl_files/lib/sfYaml/sfYaml.php');
     return sfYaml::load($file);
   }
   
@@ -54,6 +54,8 @@ class MCListener
     $this->system->serverlog = null;
     $this->system->mcllog = null;
     
+    $this->tmp->admins = array('2called_chaos', 'DvdRom', 'Wo0T', 'Earl');
+    $this->tmp->trusted = array('i81u812');
     $this->system->playerSettings = array();
   }
 
@@ -61,26 +63,24 @@ class MCListener
   {
     // structure
     $this->config = new stdClass;
-    $this->config->admins = null;
-    $this->config->trusted = null;
-
+    
     // load config file
-    foreach($this->_loadYML($this->config->mcl_dir . '/configs/config.ini')['config'] as $key => $value) {
-      $this->config->${$key} = $value;
+    $cfg = $this->_loadYML(MC_PATH . '/mcl_files/configs/config.ini');
+    foreach($cfg['config'] as $key => $value) {
+      $this->config->{$key} = $value;
     }
     
     // run initializers
     $this->config->delay = $this->config->delay * 1000000;
-    $this->config->minecraft_dir = realpath($this->config->minecraft_dir);
+    $this->config->minecraft_dir = MC_PATH;
     $this->config->mcl_dir = $this->config->minecraft_dir . '/mcl_files';
-
-    var_dump($this->config);die;
   }
 
   protected function _initLogging()
   {
     if($this->config->log == 'yes') {
       $this->system->mcllog = fopen($this->config->mcl_dir . '/output.log', 'a');
+      $this->log('Will log to ' . $this->config->mcl_dir . '/output.log');
     }
 
     return $this;
@@ -91,7 +91,7 @@ class MCListener
     $this->system->itemmap = array();
     
     // get config file contents
-    $cfg = $this->_loadYML($this->config->mcl_dir . '/config/itemmap.ini');
+    $cfg = $this->_loadYML($this->config->mcl_dir . '/configs/itemmap.ini');
     $added = 0;
 
     // parse itemmap
@@ -123,7 +123,7 @@ class MCListener
     $this->system->kits = array();
     
     // get config file contents
-    $cfg = $this->_loadYML($this->config->mcl_dir . '/config/kits.ini');
+    $cfg = $this->_loadYML($this->config->mcl_dir . '/configs/kits.ini');
     $added = 0;
 
     // parse kits
@@ -157,7 +157,7 @@ class MCListener
     $this->system->times = array();
     
     // get config file contents
-    $cfg = $this->_loadYML($this->config->mcl_dir . '/config/times.ini');
+    $cfg = $this->_loadYML($this->config->mcl_dir . '/configs/times.ini');
     $added = 0;
 
     // parse kits
@@ -310,7 +310,7 @@ class MCListener
     // send startet notification
     $this->log('MCListener ' . self::VERSION . ' started');
     $this->log('#####');
-    foreach($this->config->admins as $admin) {
+    foreach($this->tmp->admins as $admin) {
       $this->pm($admin, 'MCListener ' . self::VERSION . ' started');
     }
     $this->_watchLog();
@@ -348,8 +348,8 @@ class MCListener
       $this->tmp->newdata = '';
 
       // seek to position and gt new data
-      fseek($this->system->handle, $this->tmp->size);
-      while ($data = fgets($this->system->handle)) {
+      fseek($this->system->serverlog, $this->tmp->size);
+      while ($data = fgets($this->system->serverlog)) {
         $this->tmp->newdata .= $data;
       }
 
@@ -407,12 +407,12 @@ class MCListener
 
   public function isAdmin($user)
   {
-    return in_array($user, $this->config->admins);
+    return in_array($user, $this->tmp->admins);
   }
 
   public function isTrusted($user)
   {
-    return in_array($user, $this->config->trusted) || $this->isAdmin($user);
+    return in_array($user, $this->tmp->trusted) || $this->isAdmin($user);
   }
 
   public function deny($user)
@@ -563,29 +563,4 @@ class MCListener
     return $this;
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-  public function addAdmin($player)
-  {
-    $this->config->admins[] = $player;
-
-    return $this;
-  }
-
-  public function addTrusted($player)
-  {
-    $this->config->trusted[] = $player;
-
-    return $this;
-  }
 }
