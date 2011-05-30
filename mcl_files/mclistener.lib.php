@@ -7,12 +7,10 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 245)';
+  const VERSION = '0.1 (alpha build 246)';
 
-  public $delay = null;
-  public $screen = null;
-  public $prefix = null;
-
+  public $config = null;
+  
   public $base_dir = '/home/mc/one';
   public $mcl_dir = '/mcl_files';
 
@@ -25,15 +23,11 @@ class MCListener
   public $newdata = null;
 
   public $loghandle = null;
-  public $logfile = null;
-  public $argv = null;
   public $tmp = array();
 
   public $timemode = null;
   public $timemode_timer = 0;
 
-  public $admins = array();
-  public $trusted = array();
   public $playerSettings = array();
   public $defaultGiveAmount = 1;
   public $itemmap = array();
@@ -41,21 +35,19 @@ class MCListener
   public $times = array();
   public $commands = array();
 
-  public function __construct($argv)
+  public function __construct($args)
   {
     set_time_limit(0);
     clearstatcache();
     date_default_timezone_set("Europe/Berlin");
+    $this->mcl_dir = $this->base_dir . $this->mcl_dir;
 
-    $this->argv = $argv;
+    // init config
+    $this->_initConfig($args);
+    
+    // handlers
     $this->_handleSingleton();
     $this->_handleCLI();
-
-    // set defaults
-    $this->setDelay(0.5);
-    $this->setScreenName('minecraft');
-    $this->setPrefix('!');
-    $this->mcl_dir = $this->base_dir . $this->mcl_dir;
 
     // run initializers
     $this->_initCommands();
@@ -63,26 +55,74 @@ class MCListener
     $this->_initItemKits();
     $this->_initTimes();
   }
-
-  protected function _handleSingleton()
+  
+  // ==========
+  // = config =
+  // ==========
+  protected function _initConfig($args)
   {
+    // structure
+    $this->config = new stdClass;
+    $this->config->args = $args;
+    $this->config->delay = null;
+    $this->config->screen = null;
+    $this->config->admins = null;
+    $this->config->trusted = null;
+    $this->config->prefix = null;
+    $this->config->logfile = null;
+    
+    // set defaults
+    $this->setDelay(0.5);
+    $this->setScreenName('minecraft');
+    $this->setPrefix('!');
+  }
+  
+  public function setDelay($delay)
+  {
+    $this->config->delay = $delay * 1000000;
 
+    return $this;
   }
 
-  protected function _handleCLI()
+  public function addAdmin($player)
   {
-    // if(isset($this->argv[1])) {
-    //   switch($this->argv[1]) {
-    //     case '':
-    //
-    //       die;
-    //     break;
-    //   }
-    // } else {
-    //
-    // }
+    $this->config->admins[] = $player;
+
+    return $this;
   }
 
+  public function addTrusted($player)
+  {
+    $this->config->trusted[] = $player;
+
+    return $this;
+  }
+
+  public function setPrefix($prefix)
+  {
+    $this->config->prefix = $prefix;
+
+    return $this;
+  }
+
+  public function enableLogging($file)
+  {
+    $this->config->logfile = $file;
+    $this->loghandle = fopen($this->config->logfile, 'a');
+
+    return $this;
+  }
+
+  public function setScreenName($screen)
+  {
+    $this->config->screen = $screen;
+
+    return $this;
+  }
+
+  // ===========
+  // = loaders =
+  // ===========
   protected function _initItemMap()
   {
     // get config file contents
@@ -294,7 +334,7 @@ class MCListener
 
   public function mcexec($cmd)
   {
-    $cmd = 'screen -S ' . $this->screen . ' -p 0 -X stuff "' . $cmd . "\r" . '"';
+    $cmd = 'screen -S ' . $this->config->screen . ' -p 0 -X stuff "' . $cmd . "\r" . '"';
     return `$cmd`;
   }
 
@@ -311,7 +351,7 @@ class MCListener
     $this->size = filesize($this->file);
 
     $this->log('MCListener ' . self::VERSION . ' started');
-    foreach($this->admins as $admin) {
+    foreach($this->config->admins as $admin) {
       $this->pm($admin, 'MCListener ' . self::VERSION . ' started');
     }
     $this->_watchLog();
@@ -336,7 +376,7 @@ class MCListener
 
       // nothing changed, sleep and wait for new data
       if ($this->mtime == $this->cmtime) {
-        usleep($this->delay);
+        usleep($this->config->delay);
         continue;
       }
 
@@ -375,8 +415,8 @@ class MCListener
         $user = str_replace(array('<', '>'), '', $matches[1][0]);
         $cmd = $matches[2][0];
 
-        if(substr($cmd, 0, strlen($this->prefix)) == $this->prefix) {
-          $raw = trim(substr($cmd, strlen($this->prefix)));
+        if(substr($cmd, 0, strlen($this->config->prefix)) == $this->config->prefix) {
+          $raw = trim(substr($cmd, strlen($this->config->prefix)));
           $split = explode(" ", $raw);
           $cmd = array_shift($split);
           $this->cmd($user, $cmd, $split);
@@ -484,12 +524,12 @@ class MCListener
 
   public function isAdmin($user)
   {
-    return in_array($user, $this->admins);
+    return in_array($user, $this->config->admins);
   }
 
   public function isTrusted($user)
   {
-    return in_array($user, $this->trusted) || $this->isAdmin($user);
+    return in_array($user, $this->config->trusted) || $this->isAdmin($user);
   }
 
   public function deny($user)
@@ -538,7 +578,7 @@ class MCListener
 
     if(!array_key_exists($cmd, $this->commands)) {
       $this->pm($user, 'The command > ' . $cmd . ' < is not known!');
-      $this->pm($user, 'Type > ' . $this->prefix . 'help < to get a list of available commands!');
+      $this->pm($user, 'Type > ' . $this->config->prefix . 'help < to get a list of available commands!');
     } else {
       $this->commands[$cmd]($this, $user, $params);
     }
