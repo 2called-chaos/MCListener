@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 255)';
+  const VERSION = '0.1 (alpha build 256)';
 
   public $config = null;
 
@@ -421,13 +421,13 @@ class MCListener
       }
     }
   }
-  
+
   public function stop()
   {
     die("\n\nthe script died!\n\n");
   }
-  
-  
+
+
   // =======================
   // = users & permissions =
   // =======================
@@ -460,7 +460,7 @@ class MCListener
     return $this;
   }
 
-  
+
   // =================
   // = minecraft API =
   // =================

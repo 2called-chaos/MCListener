@@ -15,6 +15,6 @@ function CMD_defaultgive($MCL, $user, $params = array())
     } else {
       // print current default give amount
       $MCL->pm($user, 'Your default give amount is > ' . $MCL->defaultGiveAmount . ' <!');
-    } 
+    }
   }
 }
