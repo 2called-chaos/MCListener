@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 276)';
+  const VERSION = '0.1 (alpha build 277)';
 
   public $config = null;
   public $sys = null;
@@ -564,7 +564,7 @@ class MCListener
     }
   }
 
-  public function time($time = null, $persist = null)
+  public function time($user, $time = null, $persist = null)
   {
     if(is_null($time)) {
       $this->pm($user, "You have to pass a value! integer or timemode");
@@ -582,7 +582,7 @@ class MCListener
               $this->timemode = $time;
             }
 
-            $this->time($this->system->times[$time]);
+            $this->time($user, $this->system->times[$time]);
           } else {
             $this->pm($user, "Not valid value passed!");
           }
