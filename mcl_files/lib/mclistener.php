@@ -349,7 +349,7 @@ class MCListener
       // timemode
       if(!is_null($this->timemode)) {
         if((time() - $this->timemode_timer) > 120) {
-          $this->time($this->timemode);
+          $this->time('', $this->timemode);
           $this->timemode_timer = time();
         }
       }
