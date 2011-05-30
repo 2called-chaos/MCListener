@@ -82,6 +82,16 @@ class MCListener
     $this->config->minecraft_dir = MC_PATH;
     $this->config->mcl_dir = $this->config->minecraft_dir . '/mcl_files';
   }
+  
+  protected function _filterConfig($str)
+  {
+    if(is_string($str)) {
+      $str = str_replace('%MC_PATH%', MC_PATH, $str);
+    }
+    
+    
+    return $str;
+  }
 
   protected function _initLogging()
   {
@@ -435,7 +445,7 @@ class MCListener
   // =================
   public function mcexec($cmd)
   {
-    $cmd = 'screen -S ' . $this->config->screen . ' -p 0 -X stuff "' . $cmd . "\r" . '"';
+    $cmd = 'screen -S ' . $this->config->server->screen . ' -p 0 -X stuff "' . $cmd . "\r" . '"';
     return `$cmd`;
   }
 
