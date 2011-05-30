@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 213)';
+  const VERSION = '0.1 (alpha build 221)';
   
   public $delay = null;
   public $screen = null;
@@ -38,10 +38,7 @@ class MCListener
   public $defaultGiveAmount = 1;
   public $itemmap = array();
   public $kits = array();
-  public $times = array(
-    'day' => 0,
-    'night' => 13800,
-  );
+  public $times = array();
 
   public function __construct($argv)
   {
@@ -62,6 +59,7 @@ class MCListener
     // run initializers
     $this->_initItemMap();
     $this->_initItemKits();
+    $this->_initTimes();
   }
 
   protected function _handleSingleton()
@@ -160,6 +158,38 @@ class MCListener
       }
       
       $this->kits[$id] = $record;
+      $added++;
+    }
+    
+    $this->log('Loaded ' . $added . ' kits!');
+    
+    // freeing space
+    unset($cfg);
+  }
+  
+  protected function _initTimes()
+  {
+    // get config file contents
+    $cfg = file($this->mcl_dir . '/cfg_times.ini');
+    $added = 0;
+    
+    // parse kits
+    foreach ($cfg as $lno => $line) {
+      // skip comment lines
+      if(substr($line, 0, 1) == '#') {
+        continue;
+      }
+      
+      $parts = explode('=', $line);
+      $id = trim($parts[0]);
+      $time = trim($parts[1]);
+
+      // check for double times
+      if(array_key_exists($id, $this->times)) {
+        $this->error('warning', 'double time ' . $id . ' (near line ' . ($lno + 1) . ')!');
+      }
+      
+      $this->times[$id] = $time;
       $added++;
     }
     
@@ -483,13 +513,7 @@ class MCListener
       ##########
 
       case 'night':
-        $this->time(13800);
-      break;
-
-      ##########
-
-      case 'midday':
-        $this->time(6000);
+        $this->time('night');
       break;
 
       ##########
