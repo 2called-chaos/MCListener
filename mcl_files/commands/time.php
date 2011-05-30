@@ -9,5 +9,4 @@ function CMD_time($MCL, $user, $params = array())
   } else {
     $MCL->deny($user);
   }
-  
 }
