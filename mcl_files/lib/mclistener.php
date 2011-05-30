@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 275)';
+  const VERSION = '0.1 (alpha build 276)';
 
   public $config = null;
   public $sys = null;
