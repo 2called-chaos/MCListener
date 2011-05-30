@@ -7,33 +7,17 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 256)';
+  const VERSION = '0.1 (alpha build 258)';
 
   public $config = null;
+  public $sys = null;
+  public $tmp = null;
 
   public $base_dir = '/home/mc/one';
   public $mcl_dir = '/mcl_files';
 
-  public $file = null;
-  public $handle = null;
-  public $mtime = null;
-  public $cmtime = null;
-  public $size = null;
-  public $csize = null;
-  public $newdata = null;
-
-  public $loghandle = null;
-  public $tmp = array();
-
   public $timemode = null;
   public $timemode_timer = 0;
-
-  public $playerSettings = array();
-  public $defaultGiveAmount = 1;
-  public $itemmap = array();
-  public $kits = array();
-  public $times = array();
-  public $commands = array();
 
   public function __construct($args)
   {
@@ -42,14 +26,15 @@ class MCListener
     date_default_timezone_set("Europe/Berlin");
     $this->mcl_dir = $this->base_dir . $this->mcl_dir;
 
-    // init config
+    // init config & system
     $this->_initConfig($args);
+    $this->_initSystem();
 
-    // handlers
+    // run handlers
     $this->_handleSingleton();
     $this->_handleCLI();
 
-    // run initializers
+    // init additional configs
     $this->_initCommands();
     $this->_initItemMap();
     $this->_initItemKits();
@@ -60,6 +45,27 @@ class MCListener
   // ==========
   // = config =
   // ==========
+  protected function _initSystem()
+  {
+    // structure
+    $this->tmp = new stdClass;
+    $this->tmp->mtime = null;
+    $this->tmp->cmtime = null;
+    $this->tmp->cmtime = null;
+    $this->tmp->size = null;
+    $this->tmp->csize = null;
+    $this->tmp->newdata = null;
+    
+    $this->system = new stdClass;
+    $this->system->serverlog = null;
+    $this->system->mcllog = null;
+    $this->system->commands = array();
+    $this->system->itemmap = array();
+    $this->system->kits = array();
+    $this->system->times = array();
+    $this->system->playerSettings = array();
+  }
+
   protected function _initConfig($args)
   {
     // structure
@@ -71,11 +77,14 @@ class MCListener
     $this->config->trusted = null;
     $this->config->prefix = null;
     $this->config->logfile = null;
+    $this->config->serverlog = null;
+    $this->config->defaultGiveAmount = null;
 
     // set defaults
     $this->setDelay(0.5);
     $this->setScreenName('minecraft');
     $this->setPrefix('!');
+    $this->config->defaultGiveAmount = 1;
   }
 
   public function setDelay($delay)
@@ -109,7 +118,7 @@ class MCListener
   public function enableLogging($file)
   {
     $this->config->logfile = $file;
-    $this->loghandle = fopen($this->config->logfile, 'a');
+    $this->system->mcllog = fopen($this->config->logfile, 'a');
 
     return $this;
   }
@@ -146,11 +155,11 @@ class MCListener
         $alias = trim($alias);
 
         // check for double contents
-        if(array_key_exists($alias, $this->itemmap)) {
+        if(array_key_exists($alias, $this->system->itemmap)) {
           $this->error('warning', 'double alias ' . $alias . ' in itemmap (near line ' . ($lno + 1) . ')!');
         }
 
-        $this->itemmap[$alias] = $id;
+        $this->system->itemmap[$alias] = $id;
         $added++;
       }
     }
@@ -179,7 +188,7 @@ class MCListener
       $kit = explode('&', $parts[1]);
 
       // check for double kits
-      if(array_key_exists($id, $this->kits)) {
+      if(array_key_exists($id, $this->system->kits)) {
         $this->error('warning', 'double kit ' . $id . ' (near line ' . ($lno + 1) . ')!');
       }
 
@@ -196,12 +205,12 @@ class MCListener
         } else {
           $record[] = array(
             'item' => $items[0],
-            'amount' => $this->defaultGiveAmount,
+            'amount' => $this->config->defaultGiveAmount,
           );
         }
       }
 
-      $this->kits[$id] = $record;
+      $this->system->kits[$id] = $record;
       $added++;
     }
 
@@ -229,11 +238,11 @@ class MCListener
       $time = trim($parts[1]);
 
       // check for double times
-      if(array_key_exists($id, $this->times)) {
+      if(array_key_exists($id, $this->system->times)) {
         $this->error('warning', 'double time ' . $id . ' (near line ' . ($lno + 1) . ')!');
       }
 
-      $this->times[$id] = $time;
+      $this->system->times[$id] = $time;
       $added++;
     }
 
@@ -254,7 +263,7 @@ class MCListener
 
       if(substr($command, 0, 1) != '_') {
         require_once($cmd);
-        $this->commands[$command] = 'CMD_' . $command;
+        $this->system->commands[$command] = 'CMD_' . $command;
         $added++;
 
         // add aliases
@@ -262,7 +271,7 @@ class MCListener
         foreach($parts as $alias) {
           $alias = trim($alias);
           if(!empty($alias)) {
-            $this->commands[trim($alias)] = 'CMD_' . $command;
+            $this->system->commands[trim($alias)] = 'CMD_' . $command;
             $bounded++;
           }
         }
@@ -304,11 +313,11 @@ class MCListener
     // log
     $this->log("$user called $cmd " . implode(' ', $params));
 
-    if(!array_key_exists($cmd, $this->commands)) {
+    if(!array_key_exists($cmd, $this->system->commands)) {
       $this->pm($user, 'The command > ' . $cmd . ' < is not known!');
       $this->pm($user, 'Type > ' . $this->config->prefix . 'help < to get a list of available commands!');
     } else {
-      $this->commands[$cmd]($this, $user, $params);
+      $this->system->commands[$cmd]($this, $user, $params);
     }
   }
 
@@ -328,8 +337,8 @@ class MCListener
 
     echo "[LOG] " . $entry . "\n";
 
-    if(is_resource($this->loghandle)) {
-      return fwrite($this->loghandle, $entry . "\n");
+    if(is_resource($this->system->mcllog)) {
+      return fwrite($this->system->mcllog, $entry . "\n");
     }
 
     return $this;
@@ -342,10 +351,10 @@ class MCListener
       throw new Exception('The file "' . $file . '" was not found');
     }
 
-    $this->file = $file;
-    $this->handle = fopen($this->file, "r");
-    $this->mtime = filemtime($this->file);
-    $this->size = filesize($this->file);
+    $this->config->serverlog = $file;
+    $this->system->handle = fopen($this->config->serverlog, "r");
+    $this->tmp->mtime = filemtime($this->config->serverlog);
+    $this->tmp->size = filesize($this->config->serverlog);
 
     $this->log('MCListener ' . self::VERSION . ' started');
     foreach($this->config->admins as $admin) {
@@ -360,8 +369,8 @@ class MCListener
   {
     while (true) {
       clearstatcache();
-      $this->cmtime = filemtime($this->file);
-      $this->csize = filesize($this->file);
+      $this->tmp->cmtime = filemtime($this->config->serverlog);
+      $this->tmp->csize = filesize($this->config->serverlog);
 
       // timemode
       if(!is_null($this->timemode)) {
@@ -372,23 +381,23 @@ class MCListener
       }
 
       // nothing changed, sleep and wait for new data
-      if ($this->mtime == $this->cmtime) {
+      if ($this->tmp->mtime == $this->tmp->cmtime) {
         usleep($this->config->delay);
         continue;
       }
 
       // changed, open file and get new data
-      $this->newdata = '';
+      $this->tmp->newdata = '';
 
       // seek to position and gt new data
-      fseek($this->handle, $this->size);
-      while ($data = fgets($this->handle)) {
-        $this->newdata .= $data;
+      fseek($this->system->handle, $this->tmp->size);
+      while ($data = fgets($this->system->handle)) {
+        $this->tmp->newdata .= $data;
       }
 
       // update values
-      $this->size = $this->csize;
-      $this->mtime = $this->cmtime;
+      $this->tmp->size = $this->tmp->csize;
+      $this->tmp->mtime = $this->tmp->cmtime;
 
       // process new data
       $this->_processData();
@@ -398,7 +407,7 @@ class MCListener
   protected function _processData()
   {
     // preparation
-    $data = trim($this->newdata);
+    $data = trim($this->tmp->newdata);
     $chunks = explode("\n", $data);
 
     foreach($chunks as $chunk) {
@@ -433,14 +442,14 @@ class MCListener
   // =======================
   public function &getUser($user)
   {
-    if(!array_key_exists($user, $this->playerSettings)) {
+    if(!array_key_exists($user, $this->system->playerSettings)) {
       $newuser = new stdClass;
       $newuser->settings = new stdClass;
 
-      $this->playerSettings[$user] = $newuser;
+      $this->system->playerSettings[$user] = $newuser;
     }
 
-    return $this->playerSettings[$user];
+    return $this->system->playerSettings[$user];
   }
 
   public function isAdmin($user)
@@ -488,13 +497,13 @@ class MCListener
   {
     if(is_numeric($item)) {
       // ok all fine
-    } elseif(array_key_exists($item, $this->kits)) {
+    } elseif(array_key_exists($item, $this->system->kits)) {
       // kit
       $this->giveKit($user, $item);
       return;
-    } elseif (!empty($item) && array_key_exists($item, $this->itemmap)) {
+    } elseif (!empty($item) && array_key_exists($item, $this->system->itemmap)) {
       // itemmap
-      $item = $this->itemmap[$item];
+      $item = $this->system->itemmap[$item];
     } else {
       $this->pm($user, 'You have to declare an item ID');
       return false;
@@ -512,7 +521,7 @@ class MCListener
       if(isset($ouser->settings->defaultGive)) {
         $amount = $ouser->settings->defaultGive;
       } else {
-        $amount = $this->defaultGiveAmount;
+        $amount = $this->config->defaultGiveAmount;
       }
     }
 
@@ -547,7 +556,7 @@ class MCListener
 
   public function giveKit($user, $kit)
   {
-    $items = $this->kits[$kit];
+    $items = $this->system->kits[$kit];
 
     // give items
     foreach($items as $item) {
@@ -567,13 +576,13 @@ class MCListener
           $this->timemode = null;
           $this->say("Normal time now.");
         } else {
-          if(array_key_exists($time, $this->times)) {
+          if(array_key_exists($time, $this->system->times)) {
             if($persist == 'perm') {
               $this->say("Timemode > " . $time . " < enabled!");
               $this->timemode = $time;
             }
 
-            $this->time($this->times[$time]);
+            $this->time($this->system->times[$time]);
           } else {
             $this->pm($user, "Not valid value passed!");
           }
