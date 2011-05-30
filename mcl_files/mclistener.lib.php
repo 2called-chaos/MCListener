@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 221)';
+  const VERSION = '0.1 (alpha build 228)';
   
   public $delay = null;
   public $screen = null;
@@ -505,200 +505,24 @@ class MCListener
 
     $this->log("$user called $cmd " . implode(' ', $params));
 
-    switch($cmd) {
-      case 'day':
-        $this->time('day');
-      break;
-
-      ##########
-
-      case 'night':
-        $this->time('night');
-      break;
-
-      ##########
-
-      case 'time':
-        if($this->isAdmin($user)) {
-          $this->time(count($params) ? $params[0] : null, count($params) ? $params[1] : false);
-        } else {
-          $this->deny($user);
-        }
-      break;
-
-      ##########
-
-      case 'dirt':
-        if($this->isTrusted($user)) {
-          $this->give($user, 3, 64);
-        } else {
-          $this->deny($user);
-        }
-      break;
-
-      ##########
-
-      case 'defaultgive':
-        if(count($params) && is_numeric($params[0])) {
-          $this->getUser($user)->settings->defaultGive = $params[0];
-          $this->pm($user, 'Your default give amount was set to > ' . $params[0] . ' <!');
-        } else {
-          if(isset($this->getUser($user)->settings->defaultGive)) {
-            $this->pm($user, 'Your default give amount is > ' . $this->getUser($user)->settings->defaultGive . ' <!');
-          } else {
-            $this->pm($user, 'Your default give amount is > ' . $this->defaultGiveAmount . ' <!');
-          } 
-        }
-      break;
-
-      ##########
-
-      case 'getid':
-        if(!count($params)) {
-          $this->pm($user, 'You have to declare an alias!');
-        } else {
-          if(!array_key_exists($params[0], $this->itemmap)) {
-            $this->pm($user, 'The alias >  ' . $params[0] . ' < was not found!');
-          } else {
-            $this->pm($user, 'The ID for ' . $params[0] . ' is ' . $this->itemmap[$params[0]]);
-          }
-        }
-      break;
-      
-      ##########
-
-      case 'getalias':
-      case 'getaliases':
-        if(!count($params) || !is_numeric($params[0])) {
-          $this->pm($user, 'You have to declare an item ID!');
-        } else {
-          $aliases = array();
-          foreach($this->itemmap as $alias => $id) {
-            if($id == $params[0]) {
-              $aliases[] = $alias;
-            }
-          }
-          
-          if(!count($aliases)) {
-            $this->pm($user, 'There is no alias for ID ' . $params[0] . '!');
-          } else {
-            if(count($aliases) < 6) {
-              $this->pm($user, 'The aliases for ID are: ' . implode(', ', $aliases));
-            } else {
-              $break = false;
-              while(true) {
-                $tmparr = array();
-                for ($i=0; $i < 5; $i++) { 
-                  $tmparr[] = array_shift($aliases);
-                  
-                  if(!count($aliases)) {
-                    $break = true;
-                    break;
-                  }
-                }
-                $this->pm($user, 'The aliases for ID are: ' . implode(', ', $tmparr));
-                
-                if($break) {
-                  break;
-                }
-              }
-            }
-          }
-        }
-      break;
-
-      ##########
-
-      case 'give':
-        if($this->isAdmin($user)) {
-          $amount = null;
-
-          if(array_key_exists(1, $params) && is_numeric($params[1])) {
-            $amount = $params[1];
-          }
-
-          $this->give($user, isset($params[0]) ? $params[0] : null, $amount);
-        } else {
-          $this->deny($user);
-        }
-      break;
-
-      ##########
-
-      case 'rails':
-        if($this->isTrusted($user)) {
-          $this->mcexec('give ' . $user . ' 66 64');
-          $this->mcexec('give ' . $user . ' 27 16');
-        } else {
-          $this->deny($user);
-        }
-      break;
-
-      ##########
-
-      case 'tp':
-        if($this->isTrusted($user)) {
-          $this->mcexec('tp ' . $user . ' ' . $params[0]);
-        } else {
-          $this->deny($user);
-        }
-      break;
-
-      ##########
-
-      // case 'players':
-      // case 'users':
-      // case 'userlist':
-      // case 'playerlist':
-      // case 'list':
-      // case 'online':
-      //   $players = $this->_cmd_getPlayers();
-      //   // $this->mcexec('');
-      // break;
-
-      ##########
-
-      case 'op':
-        if($this->isAdmin($user)) {
-          $this->mcexec('op ' . $user);
-        } else {
-          $this->deny($user);
-        }
-      break;
-
-      ##########
-
-      case 'deop':
-        if($this->isAdmin($user)) {
-          $this->mcexec('deop ' . $user);
-        } else {
-          $this->deny($user);
-        }
-      break;
-
-      ##########
-
-      case 'help':
-      case '?':
-        $this->pm($user, 'Available commands:');
-        $this->pm($user, '!help !ping !day !midday !night !dirt !tp !rails');
-        $this->pm($user, ' !give !op !deop !defaultgive !getid !getalias');
-        // $this->pm($user, ' ');
-      break;
-
-      ##########
-
-      case 'ping':
-        $this->pm($user, 'Pong! (this means the script works)');
-      break;
-
-      ##########
-
-      default:
-        $this->mcexec('tell ' . $user . ' The command > ' . $cmd . ' < is not known!');
-        $this->mcexec('tell ' . $user . ' Type > ' . $this->prefix . 'help < to get a list of available commands!');
-      break;
+    if(!file_exists($this->mcl_dir . '/commands/' . $cmd . '.php')) {
+      $this->pm($user, 'The command > ' . $cmd . ' < is not known!');
+      $this->pm($user, 'Type > ' . $this->prefix . 'help < to get a list of available commands!');
+    } else {
+      require_once($this->mcl_dir . '/commands/' . $cmd . '.php');
+      $e_cmd = 'CMD_' . $cmd;
+      $e_cmd($this, $user, $params);
     }
+
+    // case 'players':
+    // case 'users':
+    // case 'userlist':
+    // case 'playerlist':
+    // case 'list':
+    // case 'online':
+    //   $players = $this->_cmd_getPlayers();
+    //   // $this->mcexec('');
+    // break;
   }
 
   protected function _cmd_getPlayers()
