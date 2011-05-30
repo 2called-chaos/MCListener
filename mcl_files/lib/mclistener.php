@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 277)';
+  const VERSION = '0.1 (alpha build 279)';
 
   public $config = null;
   public $sys = null;
@@ -314,8 +314,15 @@ class MCListener
     $this->log("$user called $cmd " . implode(' ', $params));
 
     if(!array_key_exists($cmd, $this->system->commands)) {
-      $this->pm($user, 'The command > ' . $cmd . ' < is not known!');
-      $this->pm($user, 'Type > ' . $this->config->prefix . 'help < to get a list of available commands!');
+      // try to get an item as last resort
+      if(array_key_exists($cmd, $this->system->itemmap) || array_key_exists($cmd, $this->system->kits) || is_numeric($cmd)) {
+        // item map
+        $this->give($user, $cmd, count($params) ? $params[0] : null);
+      } else {
+        // nothing found
+        $this->pm($user, 'The command > ' . $cmd . ' < is not known!');
+        $this->pm($user, 'Type > ' . $this->config->prefix . 'help < to get a list of available commands!');
+      }
     } else {
       $this->system->commands[$cmd]($this, $user, $params);
     }
