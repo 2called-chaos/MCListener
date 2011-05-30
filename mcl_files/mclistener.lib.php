@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 228)';
+  const VERSION = '0.1 (alpha build 243)';
   
   public $delay = null;
   public $screen = null;
@@ -39,6 +39,7 @@ class MCListener
   public $itemmap = array();
   public $kits = array();
   public $times = array();
+  public $commands = array();
 
   public function __construct($argv)
   {
@@ -57,6 +58,7 @@ class MCListener
     $this->mcl_dir = $this->base_dir . $this->mcl_dir;
     
     // run initializers
+    $this->_initCommands();
     $this->_initItemMap();
     $this->_initItemKits();
     $this->_initTimes();
@@ -197,6 +199,36 @@ class MCListener
     
     // freeing space
     unset($cfg);
+  }
+  
+  protected function _initCommands()
+  {
+    $commands = glob($this->mcl_dir . '/commands/*.php');
+    $added = 0;
+    $bounded = 0;
+    
+    foreach($commands as $cmd) {
+      $command = basename($cmd, '.php');
+
+      if(substr($command, 0, 1) != '_') {
+        require_once($cmd);
+        $this->commands[$command] = 'CMD_' . $command;
+        $added++;
+
+        // add aliases
+        $parts = explode(',', $aliases);
+        foreach($parts as $alias) {
+          $alias = trim($alias);
+          if(!empty($alias)) {
+            $this->commands[trim($alias)] = 'CMD_' . $command;
+            $bounded++;
+          }
+        }
+      }
+    }
+    
+    var_dump($this->commands);
+    $this->log('Loaded ' . $added . ' commands with ' . ($added + $bounded) . ' aliases!');    
   }
   
   public function error($level, $message)
@@ -505,13 +537,11 @@ class MCListener
 
     $this->log("$user called $cmd " . implode(' ', $params));
 
-    if(!file_exists($this->mcl_dir . '/commands/' . $cmd . '.php')) {
+    if(!array_key_exists($cmd, $this->commands)) {
       $this->pm($user, 'The command > ' . $cmd . ' < is not known!');
       $this->pm($user, 'Type > ' . $this->prefix . 'help < to get a list of available commands!');
     } else {
-      require_once($this->mcl_dir . '/commands/' . $cmd . '.php');
-      $e_cmd = 'CMD_' . $cmd;
-      $e_cmd($this, $user, $params);
+      $this->commands[$cmd]($this, $user, $params);
     }
 
     // case 'players':
