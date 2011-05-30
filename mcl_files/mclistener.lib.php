@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 247)';
+  const VERSION = '0.1 (alpha build 248)';
 
   public $config = null;
 
@@ -269,7 +269,7 @@ class MCListener
       }
     }
 
-    $this->log('Loaded ' . $added . ' commands with ' . ($added + $bounded) . ' aliases!');
+    $this->log('Loaded ' . $added . ' commands with ' . ($added + $bounded) . ' bindings!');
   }
 
 
