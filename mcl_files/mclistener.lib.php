@@ -544,15 +544,7 @@ class MCListener
       $this->commands[$cmd]($this, $user, $params);
     }
 
-    // case 'players':
-    // case 'users':
-    // case 'userlist':
-    // case 'playerlist':
-    // case 'list':
-    // case 'online':
-    //   $players = $this->_cmd_getPlayers();
-    //   // $this->mcexec('');
-    // break;
+
   }
 
   protected function _cmd_getPlayers()
