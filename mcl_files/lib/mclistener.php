@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 297)';
+  const VERSION = '0.1 (alpha build 298)';
 
   public $args = array();
   public $config = null;
@@ -281,21 +281,23 @@ class MCListener
 
   protected function _run()
   {
-    // init config & system
-    $this->_initSystem();
-    $this->_initConfig();
+    while(true) {
+      // init config & system
+      $this->_initSystem();
+      $this->_initConfig();
 
-    // init additional configs
-    $this->_initCommands();
-    $this->_initItemMap();
-    $this->_initItemKits();
-    $this->_initTimes();
-    
-    // init resources
-    $this->_initLogging();
-    
-    // run
-    $this->_observe();
+      // init additional configs
+      $this->_initCommands();
+      $this->_initItemMap();
+      $this->_initItemKits();
+      $this->_initTimes();
+
+      // init resources
+      $this->_initLogging();
+
+      // run
+      $this->_observe();
+    }
   }
 
   protected function _observe()
