@@ -49,7 +49,6 @@ class MCListener
     $this->tmp = new stdClass;
     $this->tmp->mtime = null;
     $this->tmp->cmtime = null;
-    $this->tmp->cmtime = null;
     $this->tmp->size = null;
     $this->tmp->csize = null;
     $this->tmp->newdata = null;
