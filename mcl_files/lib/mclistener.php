@@ -7,15 +7,12 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 294)';
+  const VERSION = '0.1 (alpha build 296)';
 
   public $args = array();
   public $config = null;
   public $sys = null;
   public $tmp = null;
-
-  public $base_dir = '/home/mc/one';
-  public $mcl_dir = '/mcl_files';
 
   public $timemode = null;
   public $timemode_timer = 0;
@@ -212,39 +209,6 @@ class MCListener
     $this->log('Loaded ' . $added . ' commands with ' . ($added + $bounded) . ' bindings!');
   }
 
-  public function addAdmin($player)
-  {
-    $this->config->admins[] = $player;
-
-    return $this;
-  }
-
-  public function addTrusted($player)
-  {
-    $this->config->trusted[] = $player;
-
-    return $this;
-  }
-
-  protected function _run()
-  {
-    // init config & system
-    $this->_initSystem();
-    $this->_initConfig();
-
-    // init additional configs
-    $this->_initCommands();
-    $this->_initItemMap();
-    $this->_initItemKits();
-    $this->_initTimes();
-    
-    // init resources
-    $this->_initLogging();
-    
-    // run
-    $this->_observe();
-  }
-
 
   // ============
   // = handlers =
@@ -315,6 +279,25 @@ class MCListener
     return $this;
   }
 
+  protected function _run()
+  {
+    // init config & system
+    $this->_initSystem();
+    $this->_initConfig();
+
+    // init additional configs
+    $this->_initCommands();
+    $this->_initItemMap();
+    $this->_initItemKits();
+    $this->_initTimes();
+    
+    // init resources
+    $this->_initLogging();
+    
+    // run
+    $this->_observe();
+  }
+
   protected function _observe()
   {
     $this->config->serverlog = $this->config->minecraft_dir . '/server.log';
@@ -324,6 +307,7 @@ class MCListener
 
     // send startet notification
     $this->log('MCListener ' . self::VERSION . ' started');
+    $this->log('#####');
     foreach($this->config->admins as $admin) {
       $this->pm($admin, 'MCListener ' . self::VERSION . ' started');
     }
@@ -573,6 +557,32 @@ class MCListener
         }
       }
     }
+
+    return $this;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+  public function addAdmin($player)
+  {
+    $this->config->admins[] = $player;
+
+    return $this;
+  }
+
+  public function addTrusted($player)
+  {
+    $this->config->trusted[] = $player;
 
     return $this;
   }
