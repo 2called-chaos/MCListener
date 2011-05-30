@@ -7,8 +7,8 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 243)';
-  
+  const VERSION = '0.1 (alpha build 245)';
+
   public $delay = null;
   public $screen = null;
   public $prefix = null;
@@ -28,7 +28,7 @@ class MCListener
   public $logfile = null;
   public $argv = null;
   public $tmp = array();
-  
+
   public $timemode = null;
   public $timemode_timer = 0;
 
@@ -46,17 +46,17 @@ class MCListener
     set_time_limit(0);
     clearstatcache();
     date_default_timezone_set("Europe/Berlin");
-    
+
     $this->argv = $argv;
     $this->_handleSingleton();
     $this->_handleCLI();
-    
+
     // set defaults
     $this->setDelay(0.5);
     $this->setScreenName('minecraft');
     $this->setPrefix('!');
     $this->mcl_dir = $this->base_dir . $this->mcl_dir;
-    
+
     // run initializers
     $this->_initCommands();
     $this->_initItemMap();
@@ -66,7 +66,7 @@ class MCListener
 
   protected function _handleSingleton()
   {
-    
+
   }
 
   protected function _handleCLI()
@@ -74,64 +74,64 @@ class MCListener
     // if(isset($this->argv[1])) {
     //   switch($this->argv[1]) {
     //     case '':
-    //       
+    //
     //       die;
     //     break;
     //   }
     // } else {
-    //   
+    //
     // }
   }
-  
+
   protected function _initItemMap()
   {
     // get config file contents
     $cfg = file($this->mcl_dir . '/config/itemmap.ini');
     $added = 0;
-    
+
     // parse itemmap
     foreach ($cfg as $lno => $line) {
       // skip comment lines
       if(substr($line, 0, 1) == '#') {
         continue;
       }
-      
+
       $parts = explode('<=>', $line);
       $id = trim($parts[0]);
       $aliases = explode(',', $parts[1]);
-      
+
       foreach ($aliases as $alias) {
         $alias = trim($alias);
-        
+
         // check for double contents
         if(array_key_exists($alias, $this->itemmap)) {
           $this->error('warning', 'double alias ' . $alias . ' in itemmap (near line ' . ($lno + 1) . ')!');
         }
-        
+
         $this->itemmap[$alias] = $id;
         $added++;
       }
     }
-    
+
     $this->log('Added ' . $added . ' aliases to the itemmap!');
-    
+
     // freeing space
     unset($cfg);
   }
-  
+
   protected function _initItemKits()
   {
     // get config file contents
     $cfg = file($this->mcl_dir . '/config/kits.ini');
     $added = 0;
-    
+
     // parse kits
     foreach ($cfg as $lno => $line) {
       // skip comment lines
       if(substr($line, 0, 1) == '#') {
         continue;
       }
-      
+
       $parts = explode('=>', $line);
       $id = trim($parts[0]);
       $kit = explode('&', $parts[1]);
@@ -140,12 +140,12 @@ class MCListener
       if(array_key_exists($id, $this->kits)) {
         $this->error('warning', 'double kit ' . $id . ' (near line ' . ($lno + 1) . ')!');
       }
-      
+
       // parse kit
       $record = array();
       foreach ($kit as $items) {
         $items = explode(':', trim($items));
-        
+
         if(count($items) > 1) {
           $record[] = array(
             'item' => $items[0],
@@ -158,30 +158,30 @@ class MCListener
           );
         }
       }
-      
+
       $this->kits[$id] = $record;
       $added++;
     }
-    
+
     $this->log('Loaded ' . $added . ' kits!');
-    
+
     // freeing space
     unset($cfg);
   }
-  
+
   protected function _initTimes()
   {
     // get config file contents
     $cfg = file($this->mcl_dir . '/config/times.ini');
     $added = 0;
-    
+
     // parse kits
     foreach ($cfg as $lno => $line) {
       // skip comment lines
       if(substr($line, 0, 1) == '#') {
         continue;
       }
-      
+
       $parts = explode('=', $line);
       $id = trim($parts[0]);
       $time = trim($parts[1]);
@@ -190,23 +190,23 @@ class MCListener
       if(array_key_exists($id, $this->times)) {
         $this->error('warning', 'double time ' . $id . ' (near line ' . ($lno + 1) . ')!');
       }
-      
+
       $this->times[$id] = $time;
       $added++;
     }
-    
+
     $this->log('Loaded ' . $added . ' time modes!');
-    
+
     // freeing space
     unset($cfg);
   }
-  
+
   protected function _initCommands()
   {
     $commands = glob($this->mcl_dir . '/commands/*.php');
     $added = 0;
     $bounded = 0;
-    
+
     foreach($commands as $cmd) {
       $command = basename($cmd, '.php');
 
@@ -226,11 +226,10 @@ class MCListener
         }
       }
     }
-    
-    var_dump($this->commands);
-    $this->log('Loaded ' . $added . ' commands with ' . ($added + $bounded) . ' aliases!');    
+
+    $this->log('Loaded ' . $added . ' commands with ' . ($added + $bounded) . ' aliases!');
   }
-  
+
   public function error($level, $message)
   {
     echo("\n[WARNING] " . $message . "\n");
@@ -405,10 +404,10 @@ class MCListener
     if(!array_key_exists($user, $this->playerSettings)) {
       $newuser = new stdClass;
       $newuser->settings = new stdClass;
-      
+
       $this->playerSettings[$user] = $newuser;
     }
-    
+
     return $this->playerSettings[$user];
   }
 
@@ -427,13 +426,13 @@ class MCListener
       $this->pm($user, 'You have to declare an item ID');
       return false;
     }
-    
+
     // block bedrock
     if($item == 7) {
       $this->pm($user, 'no, not this one ;)');
       return;
     }
-    
+
     // default amount if not set
     if(is_null($amount)) {
       $ouser = $this->getUser($user);
@@ -443,7 +442,7 @@ class MCListener
         $amount = $this->defaultGiveAmount;
       }
     }
-    
+
     // maximum amount
     $limitExceeded = false;
     if($amount > 2304) {
@@ -465,18 +464,18 @@ class MCListener
       $this->mcexec('give ' . $user . ' ' . $item . ' ' . $lamount);
     }
 
-    // send limit exceeded message if necessary 
+    // send limit exceeded message if necessary
     if($limitExceeded) {
       $this->pm($user, 'The amount is to high, you will get the maximum of 2304 items!');
     }
 
     return $this;
   }
-  
+
   public function giveKit($user, $kit)
   {
     $items = $this->kits[$kit];
-    
+
     // give items
     foreach($items as $item) {
       $this->give($user, $item['item'], $item['amount']);
@@ -517,7 +516,7 @@ class MCListener
               $this->say("Timemode > " . $time . " < enabled!");
               $this->timemode = $time;
             }
-            
+
             $this->time($this->times[$time]);
           } else {
             $this->pm($user, "Not valid value passed!");
@@ -525,7 +524,7 @@ class MCListener
         }
       }
     }
-    
+
     return $this;
   }
 
