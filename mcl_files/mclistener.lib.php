@@ -7,10 +7,10 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 246)';
+  const VERSION = '0.1 (alpha build 247)';
 
   public $config = null;
-  
+
   public $base_dir = '/home/mc/one';
   public $mcl_dir = '/mcl_files';
 
@@ -44,7 +44,7 @@ class MCListener
 
     // init config
     $this->_initConfig($args);
-    
+
     // handlers
     $this->_handleSingleton();
     $this->_handleCLI();
@@ -55,7 +55,8 @@ class MCListener
     $this->_initItemKits();
     $this->_initTimes();
   }
-  
+
+
   // ==========
   // = config =
   // ==========
@@ -70,13 +71,13 @@ class MCListener
     $this->config->trusted = null;
     $this->config->prefix = null;
     $this->config->logfile = null;
-    
+
     // set defaults
     $this->setDelay(0.5);
     $this->setScreenName('minecraft');
     $this->setPrefix('!');
   }
-  
+
   public function setDelay($delay)
   {
     $this->config->delay = $delay * 1000000;
@@ -119,6 +120,7 @@ class MCListener
 
     return $this;
   }
+
 
   // ===========
   // = loaders =
@@ -270,53 +272,54 @@ class MCListener
     $this->log('Loaded ' . $added . ' commands with ' . ($added + $bounded) . ' aliases!');
   }
 
+
+  // ============
+  // = handlers =
+  // ============
+  protected function _handleSingleton()
+  {
+
+  }
+
+  protected function _handleCLI()
+  {
+    // if(isset($this->args[1])) {
+    //   switch($this->args[1]) {
+    //     case '':
+    //
+    //       die;
+    //     break;
+    //   }
+    // } else {
+    //
+    // }
+  }
+
+  protected function _handleCMD($user, $cmd, $params = array())
+  {
+    if(empty($cmd)) {
+      return false;
+    }
+
+    // log
+    $this->log("$user called $cmd " . implode(' ', $params));
+
+    if(!array_key_exists($cmd, $this->commands)) {
+      $this->pm($user, 'The command > ' . $cmd . ' < is not known!');
+      $this->pm($user, 'Type > ' . $this->config->prefix . 'help < to get a list of available commands!');
+    } else {
+      $this->commands[$cmd]($this, $user, $params);
+    }
+  }
+
+
+  // =============
+  // = internals =
+  // =============
   public function error($level, $message)
   {
     echo("\n[WARNING] " . $message . "\n");
     die;
-  }
-
-  public function setDelay($delay)
-  {
-    $this->delay = $delay * 1000000;
-
-    return $this;
-  }
-
-  public function addAdmin($player)
-  {
-    $this->admins[] = $player;
-
-    return $this;
-  }
-
-  public function addTrusted($player)
-  {
-    $this->trusted[] = $player;
-
-    return $this;
-  }
-
-  public function setPrefix($prefix)
-  {
-    $this->prefix = $prefix;
-
-    return $this;
-  }
-
-  public function enableLogging($file)
-  {
-    $this->logfile = $file;
-    $this->loghandle = fopen($this->logfile, 'a');
-
-    return $this;
-  }
-
-  public function setScreenName($screen)
-  {
-    $this->screen = $screen;
-
-    return $this;
   }
 
   public function log($entry)
@@ -329,13 +332,7 @@ class MCListener
       return fwrite($this->loghandle, $entry . "\n");
     }
 
-    return false;
-  }
-
-  public function mcexec($cmd)
-  {
-    $cmd = 'screen -S ' . $this->config->screen . ' -p 0 -X stuff "' . $cmd . "\r" . '"';
-    return `$cmd`;
+    return $this;
   }
 
   public function observe($file)
@@ -419,10 +416,58 @@ class MCListener
           $raw = trim(substr($cmd, strlen($this->config->prefix)));
           $split = explode(" ", $raw);
           $cmd = array_shift($split);
-          $this->cmd($user, $cmd, $split);
+          $this->_handleCMD($user, $cmd, $split);
         }
       }
     }
+  }
+  
+  public function stop()
+  {
+    die("\n\nthe script died!\n\n");
+  }
+  
+  
+  // =======================
+  // = users & permissions =
+  // =======================
+  public function &getUser($user)
+  {
+    if(!array_key_exists($user, $this->playerSettings)) {
+      $newuser = new stdClass;
+      $newuser->settings = new stdClass;
+
+      $this->playerSettings[$user] = $newuser;
+    }
+
+    return $this->playerSettings[$user];
+  }
+
+  public function isAdmin($user)
+  {
+    return in_array($user, $this->config->admins);
+  }
+
+  public function isTrusted($user)
+  {
+    return in_array($user, $this->config->trusted) || $this->isAdmin($user);
+  }
+
+  public function deny($user)
+  {
+    $this->pm($user, 'You\'re not allowed to use this command!');
+
+    return $this;
+  }
+
+  
+  // =================
+  // = minecraft API =
+  // =================
+  public function mcexec($cmd)
+  {
+    $cmd = 'screen -S ' . $this->config->screen . ' -p 0 -X stuff "' . $cmd . "\r" . '"';
+    return `$cmd`;
   }
 
   public function pm($user, $message)
@@ -437,18 +482,6 @@ class MCListener
     $this->mcexec('say  ' . $message);
 
     return $this;
-  }
-
-  public function &getUser($user)
-  {
-    if(!array_key_exists($user, $this->playerSettings)) {
-      $newuser = new stdClass;
-      $newuser->settings = new stdClass;
-
-      $this->playerSettings[$user] = $newuser;
-    }
-
-    return $this->playerSettings[$user];
   }
 
   public function give($user, $item = null, $amount = null)
@@ -522,23 +555,6 @@ class MCListener
     }
   }
 
-  public function isAdmin($user)
-  {
-    return in_array($user, $this->config->admins);
-  }
-
-  public function isTrusted($user)
-  {
-    return in_array($user, $this->config->trusted) || $this->isAdmin($user);
-  }
-
-  public function deny($user)
-  {
-    $this->pm($user, 'You\'re not allowed to use this command!');
-
-    return $this;
-  }
-
   public function time($time = null, $persist = null)
   {
     if(is_null($time)) {
@@ -566,33 +582,5 @@ class MCListener
     }
 
     return $this;
-  }
-
-  public function cmd($user, $cmd, $params = array())
-  {
-    if(empty($cmd)) {
-      return false;
-    }
-
-    $this->log("$user called $cmd " . implode(' ', $params));
-
-    if(!array_key_exists($cmd, $this->commands)) {
-      $this->pm($user, 'The command > ' . $cmd . ' < is not known!');
-      $this->pm($user, 'Type > ' . $this->config->prefix . 'help < to get a list of available commands!');
-    } else {
-      $this->commands[$cmd]($this, $user, $params);
-    }
-
-
-  }
-
-  protected function _cmd_getPlayers()
-  {
-
-  }
-
-  public function stop()
-  {
-    die("\n\nthe script died!\n\n");
   }
 }
