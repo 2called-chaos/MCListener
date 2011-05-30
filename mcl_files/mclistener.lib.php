@@ -195,7 +195,7 @@ class MCListener
       $added++;
     }
     
-    $this->log('Loaded ' . $added . ' kits!');
+    $this->log('Loaded ' . $added . ' time modes!');
     
     // freeing space
     unset($cfg);
