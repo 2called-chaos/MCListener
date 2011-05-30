@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 289)';
+  const VERSION = '0.1 (alpha build 290)';
 
   public $config = null;
   public $sys = null;
@@ -167,41 +167,23 @@ class MCListener
   protected function _initItemKits()
   {
     // get config file contents
-    $cfg = file($this->mcl_dir . '/config/kits.ini');
+    $cfg = $this->_loadYML($this->mcl_dir . '/config/kits.ini');
     $added = 0;
 
     // parse kits
-    foreach ($cfg as $lno => $line) {
-      // skip comment lines
-      if(substr($line, 0, 1) == '#') {
-        continue;
-      }
-
-      $parts = explode('=>', $line);
-      $id = trim($parts[0]);
-      $kit = explode('&', $parts[1]);
-
+    foreach ($cfg['kits'] as $id => $kit) {
       // check for double kits
       if(array_key_exists($id, $this->system->kits)) {
-        $this->error('warning', 'double kit ' . $id . ' (near line ' . ($lno + 1) . ')!');
+        $this->error('warning', 'double kit ' . $id . '!');
       }
 
       // parse kit
       $record = array();
-      foreach ($kit as $items) {
-        $items = explode(':', trim($items));
-
-        if(count($items) > 1) {
-          $record[] = array(
-            'item' => $items[0],
-            'amount' => $items[1],
-          );
-        } else {
-          $record[] = array(
-            'item' => $items[0],
-            'amount' => $this->config->defaultGiveAmount,
-          );
-        }
+      foreach ($kit as $item => $amount) {
+        $record[] = array(
+          'item' => $item,
+          'amount' => $amount,
+        );
       }
 
       $this->system->kits[$id] = $record;
