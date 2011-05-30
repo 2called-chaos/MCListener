@@ -11,21 +11,21 @@ function CMD_getalias($MCL, $user, $params = array())
     $aliases = array();
     if(is_numeric($params[0])) {
       // numerical (item id => item aliases)
-      foreach($MCL->itemmap as $alias => $id) {
+      foreach($MCL->system->itemmap as $alias => $id) {
         if($id == $params[0]) {
           $aliases[] = $alias;
         }
       }
     } else {
       // get other command aliases
-      foreach($MCL->commands as $command => $function) {
-        if($id == $MCL->commands[$params[0]] && $command != $params[0]) {
+      foreach($MCL->system->commands as $command => $function) {
+        if($id == $MCL->system->commands[$params[0]] && $command != $params[0]) {
           $aliases[] = $alias;
         }
       }
 
       // get other itemmap aliases
-      foreach($MCL->itemmap as $alias => $id) {
+      foreach($MCL->system->itemmap as $alias => $id) {
         if($id == $MCL->getId($params[0]) && $alias != $params[0]) {
           $aliases[] = $alias;
         }

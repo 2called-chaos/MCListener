@@ -6,8 +6,8 @@ function CMD_help($MCL, $user, $params = array())
 {
   $MCL->pm($user, 'Available commands:');
 
-  $commands = array_keys($MCL->commands);
-  $ccalls = array_values($MCL->commands);
+  $commands = array_keys($MCL->system->commands);
+  $ccalls = array_values($MCL->system->commands);
   $used = array();
 
   // send commands splitted in to chunks
@@ -19,7 +19,7 @@ function CMD_help($MCL, $user, $params = array())
 
       // skip double commands
       if(!array_key_exists($call, $used)) {
-        $str .= $MCL->prefix . $val . ' ';
+        $str .= $MCL->config->prefix . $val . ' ';
         $used[$call] = true;
       }
 
