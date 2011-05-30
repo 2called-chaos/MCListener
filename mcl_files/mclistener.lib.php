@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 206)';
+  const VERSION = '0.1 (alpha build 213)';
   
   public $delay = null;
   public $screen = null;
@@ -29,7 +29,7 @@ class MCListener
   public $argv = null;
   public $tmp = array();
   
-  public $timemode = 1; // -1 night, 0 = normal, 1 = day
+  public $timemode = null;
   public $timemode_timer = 0;
 
   public $admins = array();
@@ -38,6 +38,10 @@ class MCListener
   public $defaultGiveAmount = 1;
   public $itemmap = array();
   public $kits = array();
+  public $times = array(
+    'day' => 0,
+    'night' => 13800,
+  );
 
   public function __construct($argv)
   {
@@ -59,6 +63,12 @@ class MCListener
     $this->_initItemMap();
     $this->_initItemKits();
   }
+
+  protected function _handleSingleton()
+  {
+    
+  }
+
   protected function _handleCLI()
   {
     // if(isset($this->argv[1])) {
@@ -256,12 +266,9 @@ class MCListener
       $this->csize = filesize($this->file);
 
       // timemode
-      if($this->timemode != 0) {
+      if(!is_null($this->timemode)) {
         if((time() - $this->timemode_timer) > 120) {
-          switch($this->timemode) {
-            case -1: $this->mcexec('time set 17000'); break;
-            case 1: $this->mcexec('time set 5000'); break;
-          }
+          $this->time($this->timemode);
           $this->timemode_timer = time();
         }
       }
@@ -431,6 +438,35 @@ class MCListener
     return $this;
   }
 
+  public function time($time = null, $persist = null)
+  {
+    if(is_null($time)) {
+      $this->pm($user, "You have to pass a value! integer or timemode");
+    } else {
+      if(is_numeric($time)) {
+        $this->mcexec('time set ' . $time);
+      } else {
+        if($time == 'normal') {
+          $this->timemode = null;
+          $this->say("Normal time now.");
+        } else {
+          if(array_key_exists($time, $this->times)) {
+            if($persist == 'perm') {
+              $this->say("Timemode > " . $time . " < enabled!");
+              $this->timemode = $time;
+            }
+            
+            $this->time($this->times[$time]);
+          } else {
+            $this->pm($user, "Not valid value passed!");
+          }
+        }
+      }
+    }
+    
+    return $this;
+  }
+
   public function cmd($user, $cmd, $params = array())
   {
     if(empty($cmd)) {
@@ -441,53 +477,26 @@ class MCListener
 
     switch($cmd) {
       case 'day':
-        $this->mcexec('time set 0');
+        $this->time('day');
       break;
 
       ##########
 
       case 'night':
-        $this->mcexec('time set 13800');
+        $this->time(13800);
       break;
 
       ##########
 
       case 'midday':
-        $this->mcexec('time set 6000');
+        $this->time(6000);
       break;
 
       ##########
 
       case 'time':
         if($this->isAdmin($user)) {
-          if(count($params)) {
-            if(is_numeric($params[0])) {
-              $this->mcexec('time set ' . $params[0]);
-            } else {
-              switch($params[0]) {
-                case 'day': 
-                  $this->timemode_timer = 0;
-                  $this->timemode = 1;
-                  $this->say("Daymode enabled!");
-                break;
-                case 'normal': 
-                  $this->timemode_timer = 0;
-                  $this->timemode = 0;
-                  $this->say("Normal time now.");
-                break;
-                case 'night': 
-                  $this->timemode_timer = 0;
-                  $this->timemode = -1;
-                  $this->say("Nightmode enabled!");
-                break;
-                default:
-                  $this->pm($user, "Not valid value passed!");
-                break;
-              }
-            }
-          } else {
-            $this->pm($user, "You have to pass a value! integer or timemode");
-          }
+          $this->time(count($params) ? $params[0] : null, count($params) ? $params[1] : false);
         } else {
           $this->deny($user);
         }
