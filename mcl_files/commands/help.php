@@ -6,11 +6,12 @@ function CMD_help($MCL, $user, $params = array())
 {
   $MCL->pm($user, 'Available commands:');
 
+  // get commands
   $commands = array_keys($MCL->system->commands);
   $ccalls = array_values($MCL->system->commands);
   $used = array();
 
-  // send commands splitted in to chunks
+  // send commands splitted into chunks
   while(count($commands)) {
     $str = '';
     while(strlen($str) < 45) {

@@ -10,7 +10,7 @@ function CMD_getalias($MCL, $user, $params = array())
   } else {
     // get aliases
     $aliases = array();
-    
+
     if(is_numeric($params[0])) {
       // numerical (item id => item aliases)
       foreach($MCL->system->itemmap as $alias => $id) {

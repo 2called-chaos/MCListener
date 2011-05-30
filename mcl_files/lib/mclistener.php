@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 273)';
+  const VERSION = '0.1 (alpha build 275)';
 
   public $config = null;
   public $sys = null;
@@ -55,7 +55,7 @@ class MCListener
     $this->tmp->size = null;
     $this->tmp->csize = null;
     $this->tmp->newdata = null;
-    
+
     $this->system = new stdClass;
     $this->system->serverlog = null;
     $this->system->mcllog = null;
