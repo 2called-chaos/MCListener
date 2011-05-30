@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 283)';
+  const VERSION = '0.1 (alpha build 289)';
 
   public $config = null;
   public $sys = null;
@@ -137,26 +137,20 @@ class MCListener
   protected function _initItemMap()
   {
     // get config file contents
-    $cfg = file($this->mcl_dir . '/config/itemmap.ini');
+    $cfg = $this->_loadYML($this->mcl_dir . '/config/itemmap.ini');
     $added = 0;
 
     // parse itemmap
-    foreach ($cfg as $lno => $line) {
-      // skip comment lines
-      if(substr($line, 0, 1) == '#') {
-        continue;
-      }
-
-      $parts = explode('<=>', $line);
-      $id = trim($parts[0]);
-      $aliases = explode(',', $parts[1]);
+    foreach ($cfg['itemmap'] as $id => $line) {
+      $id = $id;
+      $aliases = explode(',', $line);
 
       foreach ($aliases as $alias) {
         $alias = trim($alias);
 
         // check for double contents
         if(array_key_exists($alias, $this->system->itemmap)) {
-          $this->error('warning', 'double alias ' . $alias . ' in itemmap (near line ' . ($lno + 1) . ')!');
+          $this->error('warning', 'double alias ' . $alias . ' in itemmap!');
         }
 
         $this->system->itemmap[$alias] = $id;
@@ -441,6 +435,12 @@ class MCListener
   public function stop()
   {
     die("\n\nthe script died!\n\n");
+  }
+
+  protected function _loadYML($file)
+  {
+    require_once($this->mcl_dir . '/lib/sfYaml/sfYaml.php');
+    return sfYaml::load($file);
   }
 
 
