@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-require_once("mcl_files/mclistener.lib.php");
+require_once("mcl_files/lib/mclistener.php");
 
 // ===================================
 // = THIS IS THE CURRENT CONFIG PART =
