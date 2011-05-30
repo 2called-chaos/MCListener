@@ -67,7 +67,14 @@ class MCListener
     // load config file
     $cfg = $this->_loadYML(MC_PATH . '/mcl_files/configs/config.ini');
     foreach($cfg['config'] as $key => $value) {
-      $this->config->{$key} = $value;
+      if(is_array($value)) {
+        $this->config->{$key} = new stdClass;
+        foreach($value as $key2 => $value2) {
+          $this->config->{$key}->{$key2} = $this->_filterConfig($value2);
+        }
+      } else {
+        $this->config->{$key} = $this->_filterConfig($value);
+      }
     }
     
     // run initializers
