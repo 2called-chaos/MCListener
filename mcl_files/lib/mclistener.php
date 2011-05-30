@@ -550,13 +550,13 @@ class MCListener
       $this->pm($user, "You have to pass a value! integer or timemode");
     } else {
       // normal time
-      if($time == 'normal') {
+      if($time === 'normal') {
         $this->timemode = null;
         $this->say("Normal time now.");
         return;
       }
       
-      if($persist == 'perm') {
+      if($persist === 'perm') {
         // set timemode
         if(is_numeric($time)) {
           $this->timemode = $time;
