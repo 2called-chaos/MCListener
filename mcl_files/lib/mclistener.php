@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 279)';
+  const VERSION = '0.1 (alpha build 283)';
 
   public $config = null;
   public $sys = null;
@@ -576,22 +576,39 @@ class MCListener
     if(is_null($time)) {
       $this->pm($user, "You have to pass a value! integer or timemode");
     } else {
-      if(is_numeric($time)) {
-        $this->mcexec('time set ' . $time);
-      } else {
-        if($time == 'normal') {
-          $this->timemode = null;
-          $this->say("Normal time now.");
+      // normal time
+      if($time == 'normal') {
+        $this->timemode = null;
+        $this->say("Normal time now.");
+        return;
+      }
+      
+      if($persist == 'perm') {
+        // set timemode
+        if(is_numeric($time)) {
+          $this->timemode = $time;
+          $this->time($user, $time);
         } else {
           if(array_key_exists($time, $this->system->times)) {
-            if($persist == 'perm') {
-              $this->say("Timemode > " . $time . " < enabled!");
-              $this->timemode = $time;
-            }
-
+            $this->timemode = $this->system->times[$time];
             $this->time($user, $this->system->times[$time]);
           } else {
             $this->pm($user, "Not valid value passed!");
+            return;
+          }
+        }
+        
+        $this->say("Timemode > " . $time . " < enabled!");
+      } else {
+        // set time
+        if(is_numeric($time)) {
+          $this->mcexec('time set ' . $time);
+        } else {
+          if(array_key_exists($time, $this->system->times)) {
+            $this->time($user, $this->system->times[$time]);
+          } else {
+            $this->pm($user, "Not valid value passed!");
+            return;
           }
         }
       }
