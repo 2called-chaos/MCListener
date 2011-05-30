@@ -1,5 +1,7 @@
 <?php
 
+$aliases = 'dgive';
+
 function CMD_defaultgive($MCL, $user, $params = array())
 {
   if(count($params) && is_numeric($params[0])) {

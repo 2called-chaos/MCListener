@@ -1,5 +1,7 @@
 <?php
 
+$aliases = 'g';
+
 function CMD_give($MCL, $user, $params = array())
 {
   if($MCL->isAdmin($user)) {

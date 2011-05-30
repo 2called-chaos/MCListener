@@ -1,5 +1,7 @@
 <?php
 
+$aliases = '';
+
 function CMD_deop($MCL, $user, $params = array())
 {
   if($MCL->isAdmin($user)) {

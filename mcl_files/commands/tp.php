@@ -1,5 +1,7 @@
 <?php
 
+$aliases = '';
+
 function CMD_tp($MCL, $user, $params = array())
 {
   if($MCL->isTrusted($user)) {

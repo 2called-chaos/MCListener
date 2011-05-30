@@ -1,5 +1,7 @@
 <?php
 
+$aliases = '';
+
 function CMD_rails($MCL, $user, $params = array())
 {
   if($this->isTrusted($user)) {

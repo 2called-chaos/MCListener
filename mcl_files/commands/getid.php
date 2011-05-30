@@ -1,5 +1,7 @@
 <?php
 
+$aliases = 'id';
+
 function CMD_getid($MCL, $user, $params = array())
 {
   if(!count($params)) {

@@ -1,5 +1,7 @@
 <?php
 
+$aliases = 'alias';
+
 function CMD_getalias($MCL, $user, $params = array())
 {
   if(!count($params) || !is_numeric($params[0])) {
