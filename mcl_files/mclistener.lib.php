@@ -86,7 +86,7 @@ class MCListener
   protected function _initItemMap()
   {
     // get config file contents
-    $cfg = file($this->mcl_dir . '/cfg_itemmap.ini');
+    $cfg = file($this->mcl_dir . '/config/itemmap.ini');
     $added = 0;
     
     // parse itemmap
@@ -122,7 +122,7 @@ class MCListener
   protected function _initItemKits()
   {
     // get config file contents
-    $cfg = file($this->mcl_dir . '/cfg_kits.ini');
+    $cfg = file($this->mcl_dir . '/config/kits.ini');
     $added = 0;
     
     // parse kits
@@ -172,7 +172,7 @@ class MCListener
   protected function _initTimes()
   {
     // get config file contents
-    $cfg = file($this->mcl_dir . '/cfg_times.ini');
+    $cfg = file($this->mcl_dir . '/config/times.ini');
     $added = 0;
     
     // parse kits
