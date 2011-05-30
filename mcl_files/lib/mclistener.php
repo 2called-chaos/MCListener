@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 290)';
+  const VERSION = '0.1 (alpha build 293)';
 
   public $config = null;
   public $sys = null;
@@ -199,20 +199,11 @@ class MCListener
   protected function _initTimes()
   {
     // get config file contents
-    $cfg = file($this->mcl_dir . '/config/times.ini');
+    $cfg = $this->_loadYML($this->mcl_dir . '/config/times.ini');
     $added = 0;
 
     // parse kits
-    foreach ($cfg as $lno => $line) {
-      // skip comment lines
-      if(substr($line, 0, 1) == '#') {
-        continue;
-      }
-
-      $parts = explode('=', $line);
-      $id = trim($parts[0]);
-      $time = trim($parts[1]);
-
+    foreach ($cfg['times'] as $id => $time) {
       // check for double times
       if(array_key_exists($id, $this->system->times)) {
         $this->error('warning', 'double time ' . $id . ' (near line ' . ($lno + 1) . ')!');
