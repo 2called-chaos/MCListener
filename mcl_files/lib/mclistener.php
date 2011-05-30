@@ -7,8 +7,9 @@
 */
 class MCListener
 {
-  const VERSION = '0.1 (alpha build 293)';
+  const VERSION = '0.1 (alpha build 294)';
 
+  public $args = array();
   public $config = null;
   public $sys = null;
   public $tmp = null;
@@ -24,27 +25,24 @@ class MCListener
     set_time_limit(0);
     clearstatcache();
     date_default_timezone_set("Europe/Berlin");
-    $this->mcl_dir = $this->base_dir . $this->mcl_dir;
-
-    // init config & system
-    $this->_initConfig($args);
-    $this->_initSystem();
+    $this->args = $args;
 
     // run handlers
     $this->_handleSingleton();
     $this->_handleCLI();
-
-    // init additional configs
-    $this->_initCommands();
-    $this->_initItemMap();
-    $this->_initItemKits();
-    $this->_initTimes();
+    
+    $this->_run();
   }
-
 
   // ==========
   // = config =
   // ==========
+  protected function _loadYML($file)
+  {
+    require_once($this->config->mcl_dir . '/lib/sfYaml/sfYaml.php');
+    return sfYaml::load($file);
+  }
+  
   protected function _initSystem()
   {
     // structure
@@ -59,85 +57,45 @@ class MCListener
     $this->system = new stdClass;
     $this->system->serverlog = null;
     $this->system->mcllog = null;
-    $this->system->commands = array();
-    $this->system->itemmap = array();
-    $this->system->kits = array();
-    $this->system->times = array();
+    
     $this->system->playerSettings = array();
   }
 
-  protected function _initConfig($args)
+  protected function _initConfig()
   {
     // structure
     $this->config = new stdClass;
-    $this->config->args = $args;
-    $this->config->delay = null;
-    $this->config->screen = null;
     $this->config->admins = null;
     $this->config->trusted = null;
-    $this->config->prefix = null;
-    $this->config->logfile = null;
-    $this->config->serverlog = null;
-    $this->config->defaultGiveAmount = null;
 
-    // set defaults
-    $this->setDelay(0.5);
-    $this->setScreenName('minecraft');
-    $this->setPrefix('!');
-    $this->config->defaultGiveAmount = 1;
+    // load config file
+    foreach($this->_loadYML($this->config->mcl_dir . '/configs/config.ini')['config'] as $key => $value) {
+      $this->config->${$key} = $value;
+    }
+    
+    // run initializers
+    $this->config->delay = $this->config->delay * 1000000;
+    $this->config->minecraft_dir = realpath($this->config->minecraft_dir);
+    $this->config->mcl_dir = $this->config->minecraft_dir . '/mcl_files';
+
+    var_dump($this->config);die;
   }
 
-  public function setDelay($delay)
+  protected function _initLogging()
   {
-    $this->config->delay = $delay * 1000000;
+    if($this->config->log == 'yes') {
+      $this->system->mcllog = fopen($this->config->mcl_dir . '/output.log', 'a');
+    }
 
     return $this;
   }
 
-  public function addAdmin($player)
-  {
-    $this->config->admins[] = $player;
-
-    return $this;
-  }
-
-  public function addTrusted($player)
-  {
-    $this->config->trusted[] = $player;
-
-    return $this;
-  }
-
-  public function setPrefix($prefix)
-  {
-    $this->config->prefix = $prefix;
-
-    return $this;
-  }
-
-  public function enableLogging($file)
-  {
-    $this->config->logfile = $file;
-    $this->system->mcllog = fopen($this->config->logfile, 'a');
-
-    return $this;
-  }
-
-  public function setScreenName($screen)
-  {
-    $this->config->screen = $screen;
-
-    return $this;
-  }
-
-
-  // ===========
-  // = loaders =
-  // ===========
   protected function _initItemMap()
   {
+    $this->system->itemmap = array();
+    
     // get config file contents
-    $cfg = $this->_loadYML($this->mcl_dir . '/config/itemmap.ini');
+    $cfg = $this->_loadYML($this->config->mcl_dir . '/config/itemmap.ini');
     $added = 0;
 
     // parse itemmap
@@ -166,8 +124,10 @@ class MCListener
 
   protected function _initItemKits()
   {
+    $this->system->kits = array();
+    
     // get config file contents
-    $cfg = $this->_loadYML($this->mcl_dir . '/config/kits.ini');
+    $cfg = $this->_loadYML($this->config->mcl_dir . '/config/kits.ini');
     $added = 0;
 
     // parse kits
@@ -198,8 +158,10 @@ class MCListener
 
   protected function _initTimes()
   {
+    $this->system->times = array();
+    
     // get config file contents
-    $cfg = $this->_loadYML($this->mcl_dir . '/config/times.ini');
+    $cfg = $this->_loadYML($this->config->mcl_dir . '/config/times.ini');
     $added = 0;
 
     // parse kits
@@ -221,7 +183,10 @@ class MCListener
 
   protected function _initCommands()
   {
-    $commands = glob($this->mcl_dir . '/commands/*.php');
+    $this->system->commands = array();
+    
+    // get all commands
+    $commands = glob($this->config->mcl_dir . '/commands/*.php');
     $added = 0;
     $bounded = 0;
 
@@ -246,6 +211,39 @@ class MCListener
     }
 
     $this->log('Loaded ' . $added . ' commands with ' . ($added + $bounded) . ' bindings!');
+  }
+
+  public function addAdmin($player)
+  {
+    $this->config->admins[] = $player;
+
+    return $this;
+  }
+
+  public function addTrusted($player)
+  {
+    $this->config->trusted[] = $player;
+
+    return $this;
+  }
+
+  protected function _run()
+  {
+    // init config & system
+    $this->_initSystem();
+    $this->_initConfig();
+
+    // init additional configs
+    $this->_initCommands();
+    $this->_initItemMap();
+    $this->_initItemKits();
+    $this->_initTimes();
+    
+    // init resources
+    $this->_initLogging();
+    
+    // run
+    $this->_observe();
   }
 
 
@@ -318,18 +316,14 @@ class MCListener
     return $this;
   }
 
-  public function observe($file)
+  protected function _observe()
   {
-    if(!file_exists($file)) {
-      $this->log('The file "' . $file . '" was not found');
-      throw new Exception('The file "' . $file . '" was not found');
-    }
-
-    $this->config->serverlog = $file;
-    $this->system->handle = fopen($this->config->serverlog, "r");
+    $this->config->serverlog = $this->config->minecraft_dir . '/server.log';
+    $this->system->serverlog = fopen($this->config->serverlog, "r");
     $this->tmp->mtime = filemtime($this->config->serverlog);
     $this->tmp->size = filesize($this->config->serverlog);
 
+    // send startet notification
     $this->log('MCListener ' . self::VERSION . ' started');
     foreach($this->config->admins as $admin) {
       $this->pm($admin, 'MCListener ' . self::VERSION . ' started');
@@ -352,6 +346,11 @@ class MCListener
           $this->time('', $this->timemode);
           $this->timemode_timer = time();
         }
+      }
+
+      // rehash script
+      if(isset($this->tmp->rehash)) {
+        break;
       }
 
       // nothing changed, sleep and wait for new data
@@ -403,17 +402,6 @@ class MCListener
         }
       }
     }
-  }
-
-  public function stop()
-  {
-    die("\n\nthe script died!\n\n");
-  }
-
-  protected function _loadYML($file)
-  {
-    require_once($this->mcl_dir . '/lib/sfYaml/sfYaml.php');
-    return sfYaml::load($file);
   }
 
 
