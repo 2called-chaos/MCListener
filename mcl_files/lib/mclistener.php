@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 357)';
+  const VERSION = '0.2 (alpha build 365)';
 
   public $args = array();
   public $cli = null;
@@ -242,7 +242,12 @@ class MCListener
       
       // reattach
       $this->log("Screen will be reattached. Press Ctrl+A Ctrl+D to detach...", 'notice', false);
-      sleep(3);
+      if($this->config->fastScreenAttach == 'yes') {
+        usleep(500000);
+      } else {
+        sleep(3);
+      }
+      
       $cmd = 'screen -r ' . $this->config->sysscreen; `$cmd`;
       die;
     }
@@ -327,7 +332,11 @@ class MCListener
     }
 
     $this->log("Screen will be reattached. Press Ctrl+A Ctrl+D to detach...", 'notice', false);
-    sleep(3);
+    if($this->config->fastScreenAttach == 'yes') {
+      usleep(500000);
+    } else {
+      sleep(3);
+    }
 
     // reattach screen
     $cmd = 'screen -r ' . $this->config->server->screen;
