@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 340)';
+  const VERSION = '0.2 (alpha build 341)';
 
   public $args = array();
   public $cli = null;
@@ -328,7 +328,7 @@ class MCListener
   public function launch($force = false)
   {
     if($this->online()) {
-      if($force) {
+      if($force == 'force') {
         $this->log("Server seems to be running, killing...", 'log');
         $this->stop($force);
       } else {
@@ -348,7 +348,7 @@ class MCListener
     `$cmd`; sleep(1);
     $this->cli->sendf("%gDONE!%n");
     
-    if($this->config->server->displayOnLaunch == 'yes') {
+    if($this->config->server->displayOnLaunch == 'yes' || $force == 'watch') {
       $this->display();
     }
   }
@@ -377,7 +377,7 @@ class MCListener
       
       // limit exceeded => operation failed
       if($counter > 5) {
-        if($force) {
+        if($force == 'force') {
           $this->send('');
           $this->log("Couldn't shutdown server propably, forcing...", 'warning', true, false);
           $cmd = 'kill `ps -e | grep java | cut -d " " -f 1`'; `$cmd`;
