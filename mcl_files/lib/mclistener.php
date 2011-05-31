@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 338)';
+  const VERSION = '0.2 (alpha build 339)';
 
   public $args = array();
   public $cli = null;
@@ -108,7 +108,7 @@ class MCListener
   {
     if($this->config->log == 'yes') {
       $this->system->mcllog = fopen($this->config->mcl_dir . '/output.log', 'a');
-      $this->log('Will log to ' . $this->config->mcl_dir . '/output.log');
+      $this->log('Will log to ' . $this->config->mcl_dir . '/output.log', 'log', false);
     }
 
     return $this;
