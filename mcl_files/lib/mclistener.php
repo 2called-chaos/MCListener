@@ -10,6 +10,7 @@ class MCListener
   const VERSION = '0.2 (alpha build 319)';
 
   public $args = array();
+  public $cli = null;
   public $config = null;
   public $sys = null;
   public $tmp = null;
@@ -23,10 +24,18 @@ class MCListener
     clearstatcache();
     date_default_timezone_set("Europe/Berlin");
     $this->args = $args;
+    
+    // get CLI
+    require_once(MC_PATH . '/mcl_files/lib/CLI/CLI.php');
+    $this->cli = new Core_CLI;
 
     // run handlers
     $this->_handleSingleton();
-    $this->_handleCLI();
+    switch($this->_handleCLI()) {
+      case 'exit':
+        die;
+      break;
+    }
     
     $this->_run();
   }
@@ -232,21 +241,30 @@ class MCListener
   // ============
   protected function _handleSingleton()
   {
-
+    
   }
 
   protected function _handleCLI()
   {
-    // if(isset($this->args[1])) {
-    //   switch($this->args[1]) {
-    //     case '':
-    //
-    //       die;
-    //     break;
-    //   }
-    // } else {
-    //
-    // }
+    if(isset($this->args[1])) {
+      switch($this->args[1]) {
+      case 'status':
+        if($this->online()) {
+          echo "Minecraft server seems ONLINE."
+          return 'exit';
+        } else {
+          echo "Minecraft server seems OFFLINE."
+          return 'exit';
+        }
+        // if [ $ONLINE -eq 1 ]
+        //           then
+        //           echo "Minecraft server seems ONLINE."
+        //         else
+        //           echo "Minecraft server seems OFFLINE."
+        //         fi;;
+        //         
+      break;
+    }
   }
 
   protected function _handleCMD($user, $cmd, $params = array())
@@ -273,6 +291,41 @@ class MCListener
     }
   }
 
+
+  // ==================
+  // = daemon related =
+  // ==================
+  public function online()
+  {
+    clearstatcache();
+    return file_exists(MC_PATH . '/server.log.lck');
+  }
+  
+  public function display()
+  {
+    $cmd = 'screen -r ' . $this->config->server->screen;
+    return `$cmd`;
+  }
+  
+  public function launch()
+  {
+    $this->log("Launching minecraft server...");
+    $cmd = 'cd ' . MC_PATH; `$cmd`;
+    
+    $cmd = 'screen -m -d -S ' . $this->config->server->screen
+         . ' java -Xmx' . $this->config->server->memalloc
+         . ' -Xms' . $this->config->server->maxmemalloc
+         . ' ' . $this->config->server->args
+         . ' -jar minecraft_server.jar nogui';
+    `$cmd`; sleep(1);
+  }
+  
+  public function stop()
+  {
+    $this->log("Stopping minecraft server...");
+    $this->mcexec("stop");
+    sleep(5);
+  }
 
   // =============
   // = internals =
