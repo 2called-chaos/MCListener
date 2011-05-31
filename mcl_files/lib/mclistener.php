@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 353)';
+  const VERSION = '0.2 (alpha build 354)';
 
   public $args = array();
   public $cli = null;
@@ -437,6 +437,62 @@ class MCListener
     }
 
     $this->launch('force');
+  }
+
+  public function update($warn = false)
+  {
+    if(!$warn) {
+      $this->log('Sorry, not implemented yet', 'notice', false);
+      return;
+      // mclistener
+      $this->log('%bCheck for MCListener updates... ', 'notice', true, false);
+      $mcl_current = $this->_check4updates('mcl');
+      if(!$mcl_current) {
+        $this->cli->sendf('%gDONE (no updates)%n');
+      } else {
+        $this->cli->sendf('%gDONE%n');
+        $this->log('New updates available!');
+        $this->log('Your version: ' . VERSION);
+        $this->log('Current version: ' . $mcl_current);
+      }
+    } else {
+      // do update
+      switch($warn)
+      {
+        case 'mcl':
+          $this->log('Sorry, not implemented yet', 'notice', false);
+        break;
+        case 'minecraft'
+          $this->log('Sorry, not implemented yet', 'notice', false);
+        break;
+        default:
+          $this->log('Illegal argument passed', 'fatal', false);
+        break;
+      }
+    }
+  }
+  
+  public function _check4updates($component)
+  {
+    switch($component) {
+      case 'mcl':
+        $currentVersion = file_get_contents("http://www.project-production.de/update/mclistener");
+        if($currentVersion != VERSION) {
+          return $currentVersion;
+        } else {
+          return false;
+        }
+      break;
+      
+      case 'minecraft':
+        $currentVersion = file_get_contents("http://www.project-production.de/update/mclistener");
+        if($currentVersion != VERSION) {
+          return $currentVersion;
+        } else {
+          return false;
+        }
+      break;
+    }
   }
 
   // =============
