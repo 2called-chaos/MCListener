@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 348)';
+  const VERSION = '0.2 (alpha build 352)';
 
   public $args = array();
   public $cli = null;
@@ -77,7 +77,7 @@ class MCListener
     
     // load config file
     $cfg = $this->_loadYML(MC_PATH . '/mcl_files/configs/config.ini');
-    foreach($cfg['config'] as $key => $value) {
+    foreach($cfg as $key => $value) {
       if(is_array($value)) {
         $this->config->{$key} = new stdClass;
         foreach($value as $key2 => $value2) {
@@ -123,7 +123,7 @@ class MCListener
     $added = 0;
 
     // parse itemmap
-    foreach ($cfg['itemmap'] as $id => $line) {
+    foreach ($cfg as $id => $line) {
       $id = $id;
       $aliases = explode(',', $line);
 
@@ -155,7 +155,7 @@ class MCListener
     $added = 0;
 
     // parse kits
-    foreach ($cfg['kits'] as $id => $kit) {
+    foreach ($cfg as $id => $kit) {
       // check for double kits
       if(array_key_exists($id, $this->system->kits)) {
         $this->error('warning', 'double kit ' . $id . '!');
@@ -189,7 +189,7 @@ class MCListener
     $added = 0;
 
     // parse kits
-    foreach ($cfg['times'] as $id => $time) {
+    foreach ($cfg as $id => $time) {
       // check for double times
       if(array_key_exists($id, $this->system->times)) {
         $this->error('warning', 'double time ' . $id . ' (near line ' . ($lno + 1) . ')!');
