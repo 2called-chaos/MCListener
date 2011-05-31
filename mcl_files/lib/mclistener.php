@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 339)';
+  const VERSION = '0.2 (alpha build 340)';
 
   public $args = array();
   public $cli = null;
@@ -257,13 +257,13 @@ class MCListener
       
         case 'start':
           $this->_init('base');
-          $this->launch();
+          $this->launch(isset($this->args[2]) ? $this->args[2] : null);
           return 'exit';
         break;
         
         case 'stop':
           $this->_init('base');
-          $this->stop();
+          $this->stop(isset($this->args[2]) ? $this->args[2] : null);
           return 'exit';
         break;
         
@@ -317,7 +317,7 @@ class MCListener
       return;
     }
     
-    $this->log("Screen will be reattached. Press Ctrl+A Ctrl+D to dettach...", 'notice', false);
+    $this->log("Screen will be reattached. Press Ctrl+A Ctrl+D to detach...", 'notice', false);
     sleep(3);
     
     // reattach screen
@@ -325,11 +325,16 @@ class MCListener
     return `$cmd`;
   }
   
-  public function launch()
+  public function launch($force = false)
   {
     if($this->online()) {
-      $this->log("Couldn't start minecraft server (already running)!", 'fatal');
-      return;
+      if($force) {
+        $this->log("Server seems to be running, killing...", 'log');
+        $this->stop($force);
+      } else {
+        $this->log("Couldn't start minecraft server (already running)!", 'fatal');
+        return;
+      }
     }
     
     $cmd = 'cd ' . MC_PATH; `$cmd`;
@@ -348,7 +353,7 @@ class MCListener
     }
   }
   
-  public function stop()
+  public function stop($force = false)
   {
     // not running => nothing to stop
     if(!$this->online()) {
@@ -372,9 +377,17 @@ class MCListener
       
       // limit exceeded => operation failed
       if($counter > 5) {
-        $this->send('');
-        $this->log("Couldn't shutdown server propably!", 'fatal');
-        break;
+        if($force) {
+          $this->send('');
+          $this->log("Couldn't shutdown server propably, forcing...", 'warning', true, false);
+          $cmd = 'kill `ps -e | grep java | cut -d " " -f 1`'; `$cmd`;
+          $cmd = 'rm -fr ' . MC_PATH . '/*.log.lck 2> /dev/null/'; `$cmd`;
+          break;
+        } else {
+          $this->send('');
+          $this->log("Couldn't shutdown server propably!", 'fatal');
+          return;
+        }
       }
       
       // wait to shutdown
