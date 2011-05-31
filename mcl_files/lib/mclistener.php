@@ -229,36 +229,55 @@ class MCListener
   // ============
   protected function _handleSingleton()
   {
-
+    if(!isset($this->args[1])) {
+      $this->_init('base', false);
+      $cmd = 'screen -ls | egrep "(.*)\.' . $this->config->sysscreen . '[[:space:]](.*)"';
+      $result = trim(`$cmd`);
+      
+      // start
+      if(empty($result)) {
+        $this->log("MCListener isn't running, start...", 'notice');
+        $this->fork(MC_PATH . '/mcl launch', $this->config->sysscreen);
+      }
+      
+      // reattach
+      $this->log("Screen will be reattached. Press Ctrl+A Ctrl+D to detach...", 'notice', false);
+      sleep(3);
+      $cmd = 'screen -r ' . $this->config->sysscreen; `$cmd`;
+      die;
+    }
   }
 
   protected function _handleCLI()
   {
     if(isset($this->args[1])) {
-      $this->_init('base');
-      
       switch($this->args[1]) {
         case 'status':
+          $this->_init('base', false);
           $this->log("%bMinecraft server seems to be " . ($this->online() ? '%gONLINE' : '%rOFFLINE'), 'notice');
           return 'exit';
         break;
 
         case 'start':
+          $this->_init('base', false);
           $this->launch(isset($this->args[2]) ? $this->args[2] : null);
           return 'exit';
         break;
 
         case 'stop':
+          $this->_init('base', false);
           $this->stop(isset($this->args[2]) ? $this->args[2] : null);
           return 'exit';
         break;
 
         case 'watch':
+          $this->_init('base', false);
           $this->display();
           return 'exit';
         break;
 
         case 'restart':
+          $this->_init('base', false);
           $this->restart(isset($this->args[2]) ? $this->args[2] : null);
           return 'exit';
         break;
@@ -315,9 +334,9 @@ class MCListener
     return `$cmd`;
   }
 
-  public function fork($cmd)
+  public function fork($cmd, $screen = null)
   {
-    $cmd = 'screen -m -d -S mcl_' . uniqid() . ' ' . $cmd;
+    $cmd = 'screen -m -d -S ' . (is_null($screen) ? 'mcl_' . uniqid() : $screen) . ' ' . $cmd;
     return `$cmd`;
   }
 
@@ -540,7 +559,7 @@ class MCListener
     return $this;
   }
 
-  protected function _init($mode = 'all')
+  protected function _init($mode = 'all', $log = true)
   {
     if($mode == 'base' || $mode == 'all') {
       // init config & system
@@ -548,7 +567,9 @@ class MCListener
       $this->_initConfig();
 
       // init resources
-      $this->_initLogging();
+      if($log) {
+        $this->_initLogging();
+      }
     }
 
     if($mode == 'all') {
