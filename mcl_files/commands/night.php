@@ -2,7 +2,9 @@
 
 $aliases = '';
 
-function CMD_night($MCL, $user, $params = array())
-{
-  $MCL->time($user, 'night', (count($params) ? $params[0] : null));
+if(!function_exists('CMD_night')) {
+  function CMD_night($MCL, $user, $params = array())
+  {
+    $MCL->time($user, 'night', (count($params) ? $params[0] : null));
+  }
 }

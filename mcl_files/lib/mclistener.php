@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 368)';
+  const VERSION = '0.2 (alpha build 370)';
 
   public $args = array();
   public $cli = null;
@@ -202,9 +202,10 @@ class MCListener
 
     foreach($commands as $cmd) {
       $command = basename($cmd, '.php');
+      $aliases = "";
 
       if(substr($command, 0, 1) != '_') {
-        require_once($cmd);
+        require($cmd);
         $this->system->commands[$command] = 'CMD_' . $command;
         $added++;
 
