@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 341)';
+  const VERSION = '0.2 (alpha build 342)';
 
   public $args = array();
   public $cli = null;
@@ -271,6 +271,12 @@ class MCListener
           $this->_init('base');
           $this->display();
           return 'exit';
+        break;    
+            
+        case 'restart':
+          $this->_init('base');
+          $this->restart(isset($this->args[2]) ? $this->args[2] : null);
+          return 'exit';
         break;
       }
     }
@@ -339,7 +345,7 @@ class MCListener
     
     $cmd = 'cd ' . MC_PATH; `$cmd`;
 
-    $this->log("Launching minecraft server... ", 'log', true, false);    
+    $this->log("Launching minecraft server... ", 'notice', true, false);    
     $cmd = 'screen -m -d -S ' . $this->config->server->screen
          . ' java -Xms' . strtolower($this->config->server->memalloc)
          . ' -Xmx' . strtolower($this->config->server->maxmemalloc)
@@ -378,13 +384,13 @@ class MCListener
       // limit exceeded => operation failed
       if($counter > 5) {
         if($force == 'force') {
-          $this->send('');
+          $this->cli->send('');
           $this->log("Couldn't shutdown server propably, forcing...", 'warning', true, false);
           $cmd = 'kill `ps -e | grep java | cut -d " " -f 1`'; `$cmd`;
           $cmd = 'rm -fr ' . MC_PATH . '/*.log.lck 2> /dev/null/'; `$cmd`;
           break;
         } else {
-          $this->send('');
+          $this->cli->send('');
           $this->log("Couldn't shutdown server propably!", 'fatal');
           return;
         }
@@ -396,6 +402,25 @@ class MCListener
     $this->cli->sendf("%gDONE (" . $counter . " tries)!%n");
 
     return $this;
+  }
+
+  public function restart($warn = false)
+  {
+    // kill if running
+    if($this->online()) {
+      if($warn == 'warn') {
+        $this->log('Server is running, warning players... 30', 'notice', true, false);
+        $this->say('Server will restart in 30s!'); sleep(30);
+        $this->cli->sendf('%g ... 10', false);
+        $this->say('Server will restart in 10s!'); sleep(10);
+        $this->cli->sendf('%g ... NOW');
+        $this->say('Server will restart in NOW!');
+      }
+      
+      $this->stop();
+    }
+    
+    $this->launch('force');
   }
 
   // =============
