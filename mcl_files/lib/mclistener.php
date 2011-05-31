@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 345)';
+  const VERSION = '0.2 (alpha build 348)';
 
   public $args = array();
   public $cli = null;
@@ -373,8 +373,18 @@ class MCListener
       return;
     }
     
-    // init
+    // init & warn
     $this->log("Stopping minecraft server... ", 'notice', true, false);
+    if($force == 'warn') {
+      $this->log('Server is running, warning players... 30', 'notice', true, false);
+      $this->say('Server will stop in 30s!'); sleep(30);
+      $this->cli->sendf('%g ... 10', false);
+      $this->say('Server will stop in 10s!'); sleep(10);
+      $this->cli->sendf('%g ... NOW');
+      $this->say('Server will stop in NOW!');
+    }
+    
+    // stop it
     $this->mcexec("stop");
     $counter = 0;
     
