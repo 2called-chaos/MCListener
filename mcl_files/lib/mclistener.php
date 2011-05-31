@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 337)';
+  const VERSION = '0.2 (alpha build 338)';
 
   public $args = array();
   public $cli = null;
@@ -260,6 +260,18 @@ class MCListener
           $this->launch();
           return 'exit';
         break;
+        
+        case 'stop':
+          $this->_init('base');
+          $this->stop();
+          return 'exit';
+        break;
+        
+        case 'watch':
+          $this->_init('base');
+          $this->display();
+          return 'exit';
+        break;
       }
     }
   }
@@ -300,8 +312,16 @@ class MCListener
   
   public function display()
   {
+    if(!$this->online()) {
+      $this->log("Can't reattach minecraft console (server seems to be " . ($this->online() ? '%gONLINE' : '%rOFFLINE') . "%b)", 'warning');
+      return;
+    }
+    
+    $this->log("Screen will be reattached. Press Ctrl+A Ctrl+D to dettach...", 'notice', false);
+    sleep(3);
+    
+    // reattach screen
     $cmd = 'screen -r ' . $this->config->server->screen;
-    // $this->cli->abort($cmd);
     return `$cmd`;
   }
   
@@ -330,9 +350,39 @@ class MCListener
   
   public function stop()
   {
-    $this->log("Stopping minecraft server...");
+    // not running => nothing to stop
+    if(!$this->online()) {
+      $this->log("Couldn't stop minecraft server (isn't running)!", 'fatal');
+      return;
+    }
+    
+    // init
+    $this->log("Stopping minecraft server... ", 'notice', true, false);
     $this->mcexec("stop");
-    sleep(5);
+    $counter = 0;
+    
+    // killing loop
+    while(true) {
+      $counter++;
+      
+      // offline => success
+      if(!$this->online()) {
+        break;
+      }
+      
+      // limit exceeded => operation failed
+      if($counter > 5) {
+        $this->send('');
+        $this->log("Couldn't shutdown server propably!", 'fatal');
+        break;
+      }
+      
+      // wait to shutdown
+      sleep(1);
+    }
+    $this->cli->sendf("%gDONE (" . $counter . " tries)!%n");
+
+    return $this;
   }
 
   // =============
