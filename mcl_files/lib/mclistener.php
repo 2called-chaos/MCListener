@@ -691,7 +691,7 @@ class MCListener
   // =======================
   // = users & permissions =
   // =======================
-  public function &getUser($user)
+  protected function &_getUser($user)
   {
     if(!array_key_exists($user, $this->system->playerSettings)) {
       $newuser = new stdClass;
@@ -768,7 +768,7 @@ class MCListener
 
     // default amount if not set
     if(is_null($amount)) {
-      $ouser = $this->getUser($user);
+      $ouser = $this->_getUser($user);
       if(isset($ouser->settings->defaultGive)) {
         $amount = $ouser->settings->defaultGive;
       } else {
