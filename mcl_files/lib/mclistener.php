@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 367)';
+  const VERSION = '0.2 (alpha build 368)';
 
   public $args = array();
   public $cli = null;
@@ -736,7 +736,7 @@ class MCListener
   // =======================
   // = users & permissions =
   // =======================
-  protected function &_getUser($user)
+  public function &_getUser($user)
   {
     if(!array_key_exists($user, $this->system->playerSettings)) {
       $newuser = new stdClass;
