@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 352)';
+  const VERSION = '0.2 (alpha build 353)';
 
   public $args = array();
   public $cli = null;
@@ -132,7 +132,7 @@ class MCListener
 
         // check for double contents
         if(array_key_exists($alias, $this->system->itemmap)) {
-          $this->error('warning', 'double alias ' . $alias . ' in itemmap!');
+          $this->log('double alias ' . $alias . ' in itemmap!', 'warning');
         }
 
         $this->system->itemmap[$alias] = $id;
@@ -158,7 +158,7 @@ class MCListener
     foreach ($cfg as $id => $kit) {
       // check for double kits
       if(array_key_exists($id, $this->system->kits)) {
-        $this->error('warning', 'double kit ' . $id . '!');
+        $this->log('double kit ' . $id . '!', 'warning');
       }
 
       // parse kit
@@ -192,7 +192,7 @@ class MCListener
     foreach ($cfg as $id => $time) {
       // check for double times
       if(array_key_exists($id, $this->system->times)) {
-        $this->error('warning', 'double time ' . $id . ' (near line ' . ($lno + 1) . ')!');
+        $this->log('double time ' . $id . ' (near line ' . ($lno + 1) . ')!', 'warning');
       }
 
       $this->system->times[$id] = $time;
@@ -442,12 +442,6 @@ class MCListener
   // =============
   // = internals =
   // =============
-  public function error($level, $message)
-  {
-    echo("\n[WARNING] " . $message . "\n");
-    die;
-  }
-
   public function log($entry, $level = "log", $log = true, $newline = true)
   {
     $levels = array(
