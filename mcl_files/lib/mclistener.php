@@ -24,7 +24,7 @@ class MCListener
     clearstatcache();
     date_default_timezone_set("Europe/Berlin");
     $this->args = $args;
-    
+
     // get CLI
     require_once(MC_PATH . '/mcl_files/lib/CLI/CLI.php');
     $this->cli = new Core_CLI;
@@ -38,7 +38,7 @@ class MCListener
         die;
       break;
     }
-    
+
     $this->_run();
   }
 
@@ -50,7 +50,7 @@ class MCListener
     require_once(MC_PATH . '/mcl_files/lib/sfYaml/sfYaml.php');
     return sfYaml::load($file);
   }
-  
+
   protected function _initSystem()
   {
     // structure
@@ -64,7 +64,7 @@ class MCListener
     $this->system = new stdClass;
     $this->system->serverlog = null;
     $this->system->mcllog = null;
-    
+
     $this->tmp->admins = array('2called_chaos', 'DvdRom', 'Wo0T', 'Earl');
     $this->tmp->trusted = array('i81u812');
     $this->system->playerSettings = array();
@@ -74,7 +74,7 @@ class MCListener
   {
     // structure
     $this->config = new stdClass;
-    
+
     // load config file
     $cfg = $this->_loadYML(MC_PATH . '/mcl_files/configs/config.ini');
     foreach($cfg as $key => $value) {
@@ -87,20 +87,20 @@ class MCListener
         $this->config->{$key} = $this->_filterConfig($value);
       }
     }
-    
+
     // run initializers
     $this->config->delay = $this->config->delay * 1000000;
     $this->config->minecraft_dir = MC_PATH;
     $this->config->mcl_dir = $this->config->minecraft_dir . '/mcl_files';
   }
-  
+
   protected function _filterConfig($str)
   {
     if(is_string($str)) {
       $str = str_replace('%MC_PATH%', MC_PATH, $str);
     }
-    
-    
+
+
     return $str;
   }
 
@@ -117,7 +117,7 @@ class MCListener
   protected function _initItemMap()
   {
     $this->system->itemmap = array();
-    
+
     // get config file contents
     $cfg = $this->_loadYML($this->config->mcl_dir . '/configs/itemmap.ini');
     $added = 0;
@@ -149,7 +149,7 @@ class MCListener
   protected function _initItemKits()
   {
     $this->system->kits = array();
-    
+
     // get config file contents
     $cfg = $this->_loadYML($this->config->mcl_dir . '/configs/kits.ini');
     $added = 0;
@@ -183,7 +183,7 @@ class MCListener
   protected function _initTimes()
   {
     $this->system->times = array();
-    
+
     // get config file contents
     $cfg = $this->_loadYML($this->config->mcl_dir . '/configs/times.ini');
     $added = 0;
@@ -192,7 +192,7 @@ class MCListener
     foreach ($cfg as $id => $time) {
       // check for double times
       if(array_key_exists($id, $this->system->times)) {
-        $this->log('double time ' . $id . ' (near line ' . ($lno + 1) . ')!', 'warning');
+        $this->log('double time ' . $id . '!', 'warning');
       }
 
       $this->system->times[$id] = $time;
@@ -208,7 +208,7 @@ class MCListener
   protected function _initCommands()
   {
     $this->system->commands = array();
-    
+
     // get all commands
     $commands = glob($this->config->mcl_dir . '/commands/*.php');
     $added = 0;
@@ -243,7 +243,7 @@ class MCListener
   // ============
   protected function _handleSingleton()
   {
-    
+
   }
 
   protected function _handleCLI()
@@ -254,25 +254,25 @@ class MCListener
           $this->log("%bMinecraft server seems to be " . ($this->online() ? '%gONLINE' : '%rOFFLINE'), 'notice');
           return 'exit';
         break;
-      
+
         case 'start':
           $this->_init('base');
           $this->launch(isset($this->args[2]) ? $this->args[2] : null);
           return 'exit';
         break;
-        
+
         case 'stop':
           $this->_init('base');
           $this->stop(isset($this->args[2]) ? $this->args[2] : null);
           return 'exit';
         break;
-        
+
         case 'watch':
           $this->_init('base');
           $this->display();
           return 'exit';
-        break;    
-            
+        break;
+
         case 'restart':
           $this->_init('base');
           $this->restart(isset($this->args[2]) ? $this->args[2] : null);
@@ -315,28 +315,28 @@ class MCListener
     clearstatcache();
     return file_exists(MC_PATH . '/server.log.lck');
   }
-  
+
   public function display()
   {
     if(!$this->online()) {
       $this->log("Can't reattach minecraft console (server seems to be " . ($this->online() ? '%gONLINE' : '%rOFFLINE') . "%b)", 'warning');
       return;
     }
-    
+
     $this->log("Screen will be reattached. Press Ctrl+A Ctrl+D to detach...", 'notice', false);
     sleep(3);
-    
+
     // reattach screen
     $cmd = 'screen -r ' . $this->config->server->screen;
     return `$cmd`;
   }
-  
+
   public function fork($cmd)
   {
     $cmd = 'screen -m -d -S mcl_' . uniqid() . ' ' . $cmd;
     return `$cmd`;
   }
-  
+
   public function launch($force = false)
   {
     if($this->online()) {
@@ -348,10 +348,10 @@ class MCListener
         return;
       }
     }
-    
+
     $cmd = 'cd ' . MC_PATH; `$cmd`;
 
-    $this->log("Launching minecraft server... ", 'notice', true, false);    
+    $this->log("Launching minecraft server... ", 'notice', true, false);
     $cmd = 'screen -m -d -S ' . $this->config->server->screen
          . ' java -Xms' . strtolower($this->config->server->memalloc)
          . ' -Xmx' . strtolower($this->config->server->maxmemalloc)
@@ -359,12 +359,12 @@ class MCListener
          . ' -jar minecraft_server.jar nogui';
     `$cmd`; sleep(1);
     $this->cli->sendf("%gDONE!%n");
-    
+
     if($this->config->server->displayOnLaunch == 'yes' || $force == 'watch') {
       $this->display();
     }
   }
-  
+
   public function stop($force = false)
   {
     // not running => nothing to stop
@@ -372,7 +372,7 @@ class MCListener
       $this->log("Couldn't stop minecraft server (isn't running)!", 'fatal');
       return;
     }
-    
+
     // init & warn
     $this->log("Stopping minecraft server... ", 'notice', true, false);
     if($force == 'warn') {
@@ -383,20 +383,20 @@ class MCListener
       $this->cli->sendf('%g ... NOW');
       $this->say('Server will stop in NOW!');
     }
-    
+
     // stop it
     $this->mcexec("stop");
     $counter = 0;
-    
+
     // killing loop
     while(true) {
       $counter++;
-      
+
       // offline => success
       if(!$this->online()) {
         break;
       }
-      
+
       // limit exceeded => operation failed
       if($counter > 5) {
         if($force == 'force') {
@@ -411,7 +411,7 @@ class MCListener
           return;
         }
       }
-      
+
       // wait to shutdown
       sleep(1);
     }
@@ -432,10 +432,10 @@ class MCListener
         $this->cli->sendf('%g ... NOW');
         $this->say('Server will restart in NOW!');
       }
-      
+
       $this->stop();
     }
-    
+
     $this->launch('force');
   }
 
@@ -466,30 +466,30 @@ class MCListener
         'fatal' => true,
       ),
     );
-    
+
     // build strings
     $date = date("d.m.y H:i:s", time());
     $levelprefix = "[" . strtoupper($level) . "]";
     $clevelprefix = $levels[$level]['color'] . "[" . strtoupper($level) . "]%n";
-    
+
     // log to stdout
     if($level == 'notice') {
-      $this->cli->sendf("%y  " . $date . $levels[$level]['color'] . " * " . $levels[$level]['contentcolor'] . $entry . "%n", $newline);      
+      $this->cli->sendf("%y  " . $date . $levels[$level]['color'] . " * " . $levels[$level]['contentcolor'] . $entry . "%n", $newline);
     } else {
       $this->cli->sendf("%y  " . $date . "%n " . $clevelprefix . " " . $levels[$level]['contentcolor'] . $entry . "%n", $newline);
     }
-    
+
     // log to file
     if($log && is_resource($this->system->mcllog)) {
       $entry = str_replace(array('%k', '%r', '%g', '%y', '%b', '%m', '%p', '%c', '%w'), '', $entry);
-      
+
       if($level == 'notice') {
         return fwrite($this->system->mcllog, $date . " * " . $entry . "\n");
       } else {
         return fwrite($this->system->mcllog, $date . " " . $levelprefix . " " . $entry . "\n");
       }
     }
-    
+
     // exit if fatal
     if($levels[$level]['fatal']) {
       $this->send('');
@@ -505,11 +505,11 @@ class MCListener
       // init config & system
       $this->_initSystem();
       $this->_initConfig();
-      
+
       // init resources
       $this->_initLogging();
     }
-    
+
     if($mode == 'all') {
       // init additional configs
       $this->_initCommands();
@@ -642,13 +642,6 @@ class MCListener
     return in_array($user, $this->tmp->trusted) || $this->isAdmin($user);
   }
 
-  public function deny($user)
-  {
-    $this->pm($user, 'You\'re not allowed to use this command!');
-
-    return $this;
-  }
-
 
   // =================
   // = minecraft API =
@@ -669,6 +662,13 @@ class MCListener
   public function say($message)
   {
     $this->mcexec('say  ' . $message);
+
+    return $this;
+  }
+
+  public function deny($user)
+  {
+    $this->pm($user, 'You\'re not allowed to use this command!');
 
     return $this;
   }
@@ -755,7 +755,7 @@ class MCListener
         $this->say("Normal time now.");
         return;
       }
-      
+
       if($persist === 'perm') {
         // set timemode
         if(is_numeric($time)) {
@@ -770,7 +770,7 @@ class MCListener
             return;
           }
         }
-        
+
         $this->say("Timemode > " . $time . " < enabled!");
       } else {
         // set time
