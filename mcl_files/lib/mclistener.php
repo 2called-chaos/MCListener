@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 373)';
+  const VERSION = '0.2 (alpha build 374)';
 
   public $args = array();
   public $cli = null;
@@ -293,6 +293,15 @@ class MCListener
         break;
         
         case 'halt':
+          $this->_init('base', false);
+          $cmd = 'screen -ls | egrep "(.*)\.' . $this->config->sysscreen . '[[:space:]](.*)"';
+          $result = trim(`$cmd`);
+          
+          if(empty($result)) {
+            $this->log("Couldn't stop (isn't running)!", 'fatal');
+            return 'exit';
+          }
+          
           $this->log('Will halt...', 'notice');
           $counter = 0;
           file_put_contents(MC_PATH . '/mcl_files/tmp/halt', 'halt');
