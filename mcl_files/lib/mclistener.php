@@ -313,8 +313,8 @@ class MCListener
     $cmd = 'cd ' . MC_PATH; `$cmd`;
     
     $cmd = 'screen -m -d -S ' . $this->config->server->screen
-         . ' java -Xmx' . $this->config->server->memalloc
-         . ' -Xms' . $this->config->server->maxmemalloc
+         . ' java -Xmx' . strtolower($this->config->server->memalloc)
+         . ' -Xms' . strtolower($this->config->server->maxmemalloc)
          . ' ' . $this->config->server->args
          . ' -jar minecraft_server.jar nogui';
     `$cmd`; sleep(1);
