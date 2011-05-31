@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 319)';
+  const VERSION = '0.2 (alpha build 328)';
 
   public $args = array();
   public $cli = null;
@@ -336,14 +336,32 @@ class MCListener
     die;
   }
 
-  public function log($entry)
+  public function log($entry, $level = "log")
   {
-    $entry = date("d.m.y H:i:s", time()) . " => " . $entry;
-
-    echo "[LOG] " . $entry . "\n";
+    $levels = array(
+      'log' => array(
+        'color' => '%p',
+        'fatal' => false,
+      ),
+      'warning' => array(
+        'color' => '%o',
+        'fatal' => false,
+      ),
+      'fatal' => array(
+        'color' => '%r',
+        'fatal' => true,
+      ),
+    );
+    
+    $data = date("d.m.y H:i:s", time());
+    $level = "[" . strtoupper($level) . "]";
+    $clevel = $levels[$level]['color'] . "[" . strtoupper($level) . "]%n";
+    
+    // log to stdout
+    $this->cli->sendf("%y  " . $date . " => %n" . $clevel . " %y" . $entry . "%n");
 
     if(is_resource($this->system->mcllog)) {
-      return fwrite($this->system->mcllog, $entry . "\n");
+      return fwrite($this->system->mcllog, $date . " => " . $level . " " . $entry . "\n");
     }
 
     return $this;
@@ -378,10 +396,10 @@ class MCListener
     $this->tmp->size = filesize($this->config->serverlog);
 
     // send startet notification
-    $this->log('MCListener ' . self::VERSION . ' started');
+    $this->log('MCListener ' . self::VERSION . ' started!');
     $this->log('#####');
     foreach($this->tmp->admins as $admin) {
-      $this->pm($admin, 'MCListener ' . self::VERSION . ' started');
+      $this->pm($admin, 'MCListener ' . self::VERSION . ' started!');
     }
     $this->_watchLog();
 
