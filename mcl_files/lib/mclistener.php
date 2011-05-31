@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 365)';
+  const VERSION = '0.2 (alpha build 367)';
 
   public $args = array();
   public $cli = null;
@@ -284,6 +284,29 @@ class MCListener
         case 'restart':
           $this->_init('base', false);
           $this->restart(isset($this->args[2]) ? $this->args[2] : null);
+          return 'exit';
+        break;
+        
+        case 'halt':
+          $this->log('Will halt...', 'notice');
+          $counter = 0;
+          file_put_contents(MC_PATH . '/mcl_files/tmp/halt', 'halt');
+          
+          while(true) {
+            $cmd = 'screen -ls | egrep "(.*)\.' . $this->config->sysscreen . '[[:space:]](.*)"';
+            $result = trim(`$cmd`);
+            
+            if($counter > 10) {
+              $this->log('Failed halt...', 'fatal');
+            }
+            
+            if(empty($result)) {
+              break;
+            } else {
+              sleep(1);
+              $counter++;
+            }
+          }
           return 'exit';
         break;
       }
@@ -619,11 +642,20 @@ class MCListener
   protected function _watchLog()
   {
     while (true) {
+      clearstatcache();
+      
       // rehash script
       if(isset($this->tmp->rehash)) {
         break;
       }
-
+      
+      // halt script
+      if(file_exists(MC_PATH . '/mcl_files/tmp/halt')) {
+        $this->log('Getting halt signal! Will halt now...', 'notice');
+        unlink(MC_PATH . '/mcl_files/tmp/halt');
+        sleep(2);
+        die();
+      }
 
       // timemode
       if(!is_null($this->timemode)) {
@@ -634,7 +666,6 @@ class MCListener
       }
 
       // check for updates in server.log
-      clearstatcache();
       $this->tmp->cmtime = filemtime($this->config->serverlog);
       $this->tmp->csize = filesize($this->config->serverlog);
 
