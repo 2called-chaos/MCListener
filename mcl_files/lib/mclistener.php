@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 336)';
+  const VERSION = '0.2 (alpha build 337)';
 
   public $args = array();
   public $cli = null;
@@ -383,6 +383,8 @@ class MCListener
     
     // log to file
     if($log && is_resource($this->system->mcllog)) {
+      $entry = str_replace(array('%k', '%r', '%g', '%y', '%b', '%m', '%p', '%c', '%w'), '', $entry);
+      
       if($level == 'notice') {
         return fwrite($this->system->mcllog, $date . " * " . $entry . "\n");
       } else {
