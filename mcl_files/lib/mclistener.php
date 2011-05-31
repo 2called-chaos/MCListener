@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 374)';
+  const VERSION = '0.2 (alpha build 375)';
 
   public $args = array();
   public $cli = null;
@@ -658,31 +658,35 @@ class MCListener
     return $this;
   }
 
+  protected function _listeners()
+  {
+    // rehash script
+    if(isset($this->tmp->rehash)) {
+      break;
+    }
+    
+    // halt script
+    if(file_exists(MC_PATH . '/mcl_files/tmp/halt')) {
+      $this->log('Getting halt signal! Will halt now...', 'notice');
+      unlink(MC_PATH . '/mcl_files/tmp/halt');
+      sleep(2);
+      die();
+    }
+
+    // timemode
+    if(!is_null($this->timemode)) {
+      if((time() - $this->timemode_timer) > 120) {
+        $this->time('', $this->timemode);
+        $this->timemode_timer = time();
+      }
+    }
+  }
+
   protected function _watchLog()
   {
     while (true) {
       clearstatcache();
-      
-      // rehash script
-      if(isset($this->tmp->rehash)) {
-        break;
-      }
-      
-      // halt script
-      if(file_exists(MC_PATH . '/mcl_files/tmp/halt')) {
-        $this->log('Getting halt signal! Will halt now...', 'notice');
-        unlink(MC_PATH . '/mcl_files/tmp/halt');
-        sleep(2);
-        die();
-      }
-
-      // timemode
-      if(!is_null($this->timemode)) {
-        if((time() - $this->timemode_timer) > 120) {
-          $this->time('', $this->timemode);
-          $this->timemode_timer = time();
-        }
-      }
+      $this->_listeners();
 
       // check for updates in server.log
       $this->tmp->cmtime = filemtime($this->config->serverlog);
