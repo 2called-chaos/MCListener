@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 335)';
+  const VERSION = '0.2 (alpha build 336)';
 
   public $args = array();
   public $cli = null;
@@ -250,22 +250,17 @@ class MCListener
   {
     if(isset($this->args[1])) {
       switch($this->args[1]) {
-      case 'status':
-        if($this->online()) {
-          echo "Minecraft server seems ONLINE."
+        case 'status':
+          $this->log("%bMinecraft server seems to be " . ($this->online() ? '%gONLINE' : '%rOFFLINE'), 'notice');
           return 'exit';
-        } else {
-          echo "Minecraft server seems OFFLINE."
+        break;
+      
+        case 'start':
+          $this->_init('base');
+          $this->launch();
           return 'exit';
-        }
-        // if [ $ONLINE -eq 1 ]
-        //           then
-        //           echo "Minecraft server seems ONLINE."
-        //         else
-        //           echo "Minecraft server seems OFFLINE."
-        //         fi;;
-        //         
-      break;
+        break;
+      }
     }
   }
 
@@ -306,20 +301,31 @@ class MCListener
   public function display()
   {
     $cmd = 'screen -r ' . $this->config->server->screen;
+    // $this->cli->abort($cmd);
     return `$cmd`;
   }
   
   public function launch()
   {
-    $this->log("Launching minecraft server...");
-    $cmd = 'cd ' . MC_PATH; `$cmd`;
+    if($this->online()) {
+      $this->log("Couldn't start minecraft server (already running)!", 'fatal');
+      return;
+    }
     
+    $cmd = 'cd ' . MC_PATH; `$cmd`;
+
+    $this->log("Launching minecraft server... ", 'log', true, false);    
     $cmd = 'screen -m -d -S ' . $this->config->server->screen
-         . ' java -Xmx' . strtolower($this->config->server->memalloc)
-         . ' -Xms' . strtolower($this->config->server->maxmemalloc)
+         . ' java -Xms' . strtolower($this->config->server->memalloc)
+         . ' -Xmx' . strtolower($this->config->server->maxmemalloc)
          . ' ' . $this->config->server->args
          . ' -jar minecraft_server.jar nogui';
     `$cmd`; sleep(1);
+    $this->cli->sendf("%gDONE!%n");
+    
+    if($this->config->server->displayOnLaunch == 'yes') {
+      $this->display();
+    }
   }
   
   public function stop()
@@ -338,54 +344,85 @@ class MCListener
     die;
   }
 
-  public function log($entry, $level = "log")
+  public function log($entry, $level = "log", $log = true, $newline = true)
   {
     $levels = array(
       'log' => array(
-        'color' => '%p',
+        'color' => '%b',
+        'contentcolor' => '%y',
+        'fatal' => false,
+      ),
+      'notice' => array(
+        'color' => '%g',
+        'contentcolor' => '%g',
         'fatal' => false,
       ),
       'warning' => array(
-        'color' => '%o',
+        'color' => '%r',
+        'contentcolor' => '%y',
         'fatal' => false,
       ),
       'fatal' => array(
         'color' => '%r',
+        'contentcolor' => '%r',
         'fatal' => true,
       ),
     );
     
-    $data = date("d.m.y H:i:s", time());
-    $level = "[" . strtoupper($level) . "]";
-    $clevel = $levels[$level]['color'] . "[" . strtoupper($level) . "]%n";
+    // build strings
+    $date = date("d.m.y H:i:s", time());
+    $levelprefix = "[" . strtoupper($level) . "]";
+    $clevelprefix = $levels[$level]['color'] . "[" . strtoupper($level) . "]%n";
     
     // log to stdout
-    $this->cli->sendf("%y  " . $date . " => %n" . $clevel . " %y" . $entry . "%n");
-
-    if(is_resource($this->system->mcllog)) {
-      return fwrite($this->system->mcllog, $date . " => " . $level . " " . $entry . "\n");
+    if($level == 'notice') {
+      $this->cli->sendf("%y  " . $date . $levels[$level]['color'] . " * " . $levels[$level]['contentcolor'] . $entry . "%n", $newline);      
+    } else {
+      $this->cli->sendf("%y  " . $date . "%n " . $clevelprefix . " " . $levels[$level]['contentcolor'] . $entry . "%n", $newline);
+    }
+    
+    // log to file
+    if($log && is_resource($this->system->mcllog)) {
+      if($level == 'notice') {
+        return fwrite($this->system->mcllog, $date . " * " . $entry . "\n");
+      } else {
+        return fwrite($this->system->mcllog, $date . " " . $levelprefix . " " . $entry . "\n");
+      }
+    }
+    
+    // exit if fatal
+    if($levels[$level]['fatal']) {
+      $this->send('');
+      die;
     }
 
     return $this;
   }
 
-  protected function _run()
+  protected function _init($mode = 'all')
   {
-    while(true) {
+    if($mode == 'base' || $mode == 'all') {
       // init config & system
       $this->_initSystem();
       $this->_initConfig();
-
+      
+      // init resources
+      $this->_initLogging();
+    }
+    
+    if($mode == 'all') {
       // init additional configs
       $this->_initCommands();
       $this->_initItemMap();
       $this->_initItemKits();
       $this->_initTimes();
+    }
+  }
 
-      // init resources
-      $this->_initLogging();
-
-      // run
+  protected function _run()
+  {
+    while(true) {
+      $this->_init();
       $this->_observe();
     }
   }
