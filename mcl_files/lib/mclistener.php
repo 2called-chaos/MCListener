@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 354)';
+  const VERSION = '0.2 (alpha build 357)';
 
   public $args = array();
   public $cli = null;
@@ -64,6 +64,7 @@ class MCListener
     $this->system = new stdClass;
     $this->system->serverlog = null;
     $this->system->mcllog = null;
+    $this->system->serverVersion = null;
 
     $this->tmp->admins = array('2called_chaos', 'DvdRom', 'Wo0T', 'Earl');
     $this->tmp->trusted = array('i81u812');
@@ -604,9 +605,11 @@ class MCListener
   protected function _watchLog()
   {
     while (true) {
-      clearstatcache();
-      $this->tmp->cmtime = filemtime($this->config->serverlog);
-      $this->tmp->csize = filesize($this->config->serverlog);
+      // rehash script
+      if(isset($this->tmp->rehash)) {
+        break;
+      }
+
 
       // timemode
       if(!is_null($this->timemode)) {
@@ -616,10 +619,10 @@ class MCListener
         }
       }
 
-      // rehash script
-      if(isset($this->tmp->rehash)) {
-        break;
-      }
+      // check for updates in server.log
+      clearstatcache();
+      $this->tmp->cmtime = filemtime($this->config->serverlog);
+      $this->tmp->csize = filesize($this->config->serverlog);
 
       // nothing changed, sleep and wait for new data
       if ($this->tmp->mtime == $this->tmp->cmtime) {
@@ -652,7 +655,9 @@ class MCListener
     $chunks = explode("\n", $data);
 
     foreach($chunks as $chunk) {
-      $re1='(?:(?:2|1)\\d{3}(?:-|\\/)(?:(?:0[1-9])|(?:1[0-2]))(?:-|\\/)(?:(?:0[1-9])|(?:[1-2][0-9])|(?:3[0-1]))(?:T|\\s)(?:(?:[0-1][0-9])|(?:2[0-3])):(?:[0-5][0-9]):(?:[0-5][0-9]))';	# Timestamp
+      // player chat
+      $re1 = '(?:(?:2|1)\\d{3}(?:-|\\/)(?:(?:0[1-9])|(?:1[0-2]))(?:-|\\/)(?:(?:0[1-9])|(?:[1-2][0-9])|'
+           . '(?:3[0-1]))(?:T|\\s)(?:(?:[0-1][0-9])|(?:2[0-3])):(?:[0-5][0-9]):(?:[0-5][0-9]))';	# Timestamp
       $re2='(?:\\s+\\[INFO\\]\\s+)';	# square braces
       $re3='(<[^>]+>)';	# tag resp. player
       $re4='(?:\\s+)';	# white space
@@ -669,6 +674,16 @@ class MCListener
           $this->_handleCMD($user, $cmd, $split);
         }
       }
+      
+      // silent command calling via tell
+      /*
+        TODO linked
+      */
+      
+      // server version
+      /*
+        TODO linked
+      */
     }
   }
 
