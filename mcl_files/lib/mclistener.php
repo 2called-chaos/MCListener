@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 370)';
+  const VERSION = '0.2 (alpha build 373)';
 
   public $args = array();
   public $cli = null;
@@ -288,6 +288,10 @@ class MCListener
           return 'exit';
         break;
         
+        case 'launch':
+          return;
+        break;
+        
         case 'halt':
           $this->log('Will halt...', 'notice');
           $counter = 0;
@@ -308,6 +312,11 @@ class MCListener
               $counter++;
             }
           }
+          return 'exit';
+        break;
+        
+        default:
+          $this->log('No valid argument passed! Use: start [force/watch] / stop [force/warn] / restart [warn] / status / watch / halt / launch', 'fatal');
           return 'exit';
         break;
       }
@@ -585,7 +594,7 @@ class MCListener
 
     // exit if fatal
     if($levels[$level]['fatal']) {
-      $this->send('');
+      $this->cli->send('');
       die;
     }
 
