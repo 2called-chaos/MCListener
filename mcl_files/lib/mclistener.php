@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 342)';
+  const VERSION = '0.2 (alpha build 345)';
 
   public $args = array();
   public $cli = null;
@@ -328,6 +328,12 @@ class MCListener
     
     // reattach screen
     $cmd = 'screen -r ' . $this->config->server->screen;
+    return `$cmd`;
+  }
+  
+  public function fork($cmd)
+  {
+    $cmd = 'screen -m -d -S mcl_' . uniqid() . ' ' . $cmd;
     return `$cmd`;
   }
   
