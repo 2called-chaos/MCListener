@@ -5,7 +5,7 @@
 define('MC_PATH', realpath(dirname(__FILE__)));
 
 // include mclistener
-require_once("mcl_files/lib/mclistener.php");
+require_once(MC_PATH . "/mcl_files/lib/mclistener.php");
 
 // run
 $listener = new MCListener($argv);
