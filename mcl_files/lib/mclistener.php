@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 328)';
+  const VERSION = '0.2 (alpha build 335)';
 
   public $args = array();
   public $cli = null;
@@ -28,11 +28,13 @@ class MCListener
     // get CLI
     require_once(MC_PATH . '/mcl_files/lib/CLI/CLI.php');
     $this->cli = new Core_CLI;
+    $this->cli->sendf("\n  %p--> MCListener " . self::VERSION . " <--%n");
 
     // run handlers
     $this->_handleSingleton();
     switch($this->_handleCLI()) {
       case 'exit':
+        $this->cli->send('');
         die;
       break;
     }
