@@ -42,6 +42,7 @@ class MCListener
     $this->_run();
   }
 
+
   // ==========
   // = config =
   // ==========
@@ -130,12 +131,6 @@ class MCListener
 
       foreach ($aliases as $alias) {
         $alias = trim($alias);
-
-        // check for double contents
-        if(array_key_exists($alias, $this->system->itemmap)) {
-          $this->log('double alias ' . $alias . ' in itemmap!', 'warning');
-        }
-
         $this->system->itemmap[$alias] = $id;
         $added++;
       }
@@ -157,11 +152,6 @@ class MCListener
 
     // parse kits
     foreach ($cfg as $id => $kit) {
-      // check for double kits
-      if(array_key_exists($id, $this->system->kits)) {
-        $this->log('double kit ' . $id . '!', 'warning');
-      }
-
       // parse kit
       $record = array();
       foreach ($kit as $item => $amount) {
@@ -191,11 +181,6 @@ class MCListener
 
     // parse kits
     foreach ($cfg as $id => $time) {
-      // check for double times
-      if(array_key_exists($id, $this->system->times)) {
-        $this->log('double time ' . $id . '!', 'warning');
-      }
-
       $this->system->times[$id] = $time;
       $added++;
     }
@@ -463,7 +448,7 @@ class MCListener
         case 'mcl':
           $this->log('Sorry, not implemented yet', 'notice', false);
         break;
-        case 'minecraft'
+        case 'minecraft':
           $this->log('Sorry, not implemented yet', 'notice', false);
         break;
         default:
@@ -472,7 +457,7 @@ class MCListener
       }
     }
   }
-  
+
   public function _check4updates($component)
   {
     switch($component) {
@@ -484,7 +469,7 @@ class MCListener
           return false;
         }
       break;
-      
+
       case 'minecraft':
         $currentVersion = file_get_contents("http://www.project-production.de/update/mclistener");
         if($currentVersion != VERSION) {
@@ -495,6 +480,7 @@ class MCListener
       break;
     }
   }
+
 
   // =============
   // = internals =
@@ -674,12 +660,12 @@ class MCListener
           $this->_handleCMD($user, $cmd, $split);
         }
       }
-      
+
       // silent command calling via tell
       /*
         TODO linked
       */
-      
+
       // server version
       /*
         TODO linked
