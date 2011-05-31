@@ -235,6 +235,8 @@ class MCListener
   protected function _handleCLI()
   {
     if(isset($this->args[1])) {
+      $this->_init('base');
+      
       switch($this->args[1]) {
         case 'status':
           $this->log("%bMinecraft server seems to be " . ($this->online() ? '%gONLINE' : '%rOFFLINE'), 'notice');
@@ -242,25 +244,21 @@ class MCListener
         break;
 
         case 'start':
-          $this->_init('base');
           $this->launch(isset($this->args[2]) ? $this->args[2] : null);
           return 'exit';
         break;
 
         case 'stop':
-          $this->_init('base');
           $this->stop(isset($this->args[2]) ? $this->args[2] : null);
           return 'exit';
         break;
 
         case 'watch':
-          $this->_init('base');
           $this->display();
           return 'exit';
         break;
 
         case 'restart':
-          $this->_init('base');
           $this->restart(isset($this->args[2]) ? $this->args[2] : null);
           return 'exit';
         break;
