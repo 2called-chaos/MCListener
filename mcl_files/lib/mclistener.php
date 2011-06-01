@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 383)';
+  const VERSION = '0.2 (alpha build 384)';
 
   public $args = array();
   public $cli = null;
@@ -674,7 +674,7 @@ class MCListener
     if(file_exists(MC_PATH . '/mcl_files/tmp/reload')) {
       $this->log('Getting reload signal! Will reload now...', 'notice');
       unlink(MC_PATH . '/mcl_files/tmp/reload');
-      break;
+      return true;
     }
     
     // halt script
@@ -692,13 +692,17 @@ class MCListener
         $this->timemode_timer = time();
       }
     }
+    
+    return false;
   }
 
   protected function _watchLog()
   {
     while (true) {
       clearstatcache();
-      $this->_listeners();
+      if($this->_listeners()) {
+        break;
+      }
 
       // check for updates in server.log
       $this->tmp->cmtime = filemtime($this->config->serverlog);
