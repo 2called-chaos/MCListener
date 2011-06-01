@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 382)';
+  const VERSION = '0.2 (alpha build 383)';
 
   public $args = array();
   public $cli = null;
@@ -372,7 +372,7 @@ class MCListener
       case 'mcl':
         $cmd = 'screen -ls | egrep "(.*)\.' . $this->config->sysscreen . '[[:space:]](.*)"';
         $result = trim(`$cmd`);
-        return empty($result);
+        return !empty($result);
       break;
     }
   }
