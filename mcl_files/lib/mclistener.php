@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 389)';
+  const VERSION = '0.4 (alpha build 390)';
 
   public $args = array();
   public $cli = null;
@@ -524,62 +524,6 @@ class MCListener
     $this->launch();
   }
 
-  public function update($warn = false)
-  {
-    if(!$warn) {
-      $this->log('Sorry, not implemented yet', 'notice', false);
-      return;
-      // mclistener
-      $this->log('%bCheck for MCListener updates... ', 'notice', true, false);
-      $mcl_current = $this->_check4updates('mcl');
-      if(!$mcl_current) {
-        $this->cli->sendf('%gDONE (no updates)%n');
-      } else {
-        $this->cli->sendf('%gDONE%n');
-        $this->log('New updates available!');
-        $this->log('Your version: ' . VERSION);
-        $this->log('Current version: ' . $mcl_current);
-      }
-    } else {
-      // do update
-      switch($warn)
-      {
-        case 'mcl':
-          $this->log('Sorry, not implemented yet', 'notice', false);
-        break;
-        case 'minecraft':
-          $this->log('Sorry, not implemented yet', 'notice', false);
-        break;
-        default:
-          $this->log('Illegal argument passed', 'fatal', false);
-        break;
-      }
-    }
-  }
-
-  public function _check4updates($component)
-  {
-    switch($component) {
-      case 'mcl':
-        $currentVersion = file_get_contents("http://www.project-production.de/update/mclistener");
-        if($currentVersion != VERSION) {
-          return $currentVersion;
-        } else {
-          return false;
-        }
-      break;
-
-      case 'minecraft':
-        $currentVersion = file_get_contents("http://www.project-production.de/update/mclistener");
-        if($currentVersion != VERSION) {
-          return $currentVersion;
-        } else {
-          return false;
-        }
-      break;
-    }
-  }
-
 
   // =============
   // = internals =
@@ -778,45 +722,6 @@ class MCListener
           $this->_handleCMD($user, $cmd, $split);
         }
       }
-
-      // silent command calling via tell
-      /*
-        TODO linked
-      */
-
-      // server version
-      // $re1 = '(?:(?:2|1)\\d{3}(?:-|\\/)(?:(?:0[1-9])|(?:1[0-2]))(?:-|\\/)(?:(?:0[1-9])|(?:[1-2][0-9])|'
-      //      . '(?:3[0-1]))(?:T|\\s)(?:(?:[0-1][0-9])|(?:2[0-3])):(?:[0-5][0-9]):(?:[0-5][0-9]))'; # Timestamp
-      // $re2='(?:\\s+\\[INFO\\]\\s+)'; # square braces
-      // $re3='(Starting)( )(minecraft)( )(server)( )(version)( )(Beta)( )';
-      // $re4='(.*)'; # Server version
-      // 
-      // $re1='((?:2|1)\\d{3}(?:-|\\/)(?:(?:0[1-9])|(?:1[0-2]))(?:-|\\/)(?:(?:0[1-9])|(?:[1-2][0-9])|(?:3[0-1]))(?:T|\\s)(?:(?:[0-1][0-9])|(?:2[0-3])):(?:[0-5][0-9]):(?:[0-5][0-9]))'; # Time Stamp 1
-      // $re2='( )';  # White Space 1
-      // $re3='(\\[INFO\\])'; # Square Braces 1
-      // $re4='( )';  # White Space 2
-      // $re5='(Starting)'; # Word 1
-      // $re6='( )';  # White Space 3
-      // $re7='(minecraft)';  # Word 2
-      // $re8='( )';  # White Space 4
-      // $re9='(server)'; # Word 3
-      // $re10='( )'; # White Space 5
-      // $re11='(version)'; # Word 4
-      // $re12='( )'; # White Space 6
-      // $re13='(Beta)';  # Word 5
-      // $re14='( )'; # White Space 7
-      // $re15='(1)'; # Any Single Digit 1
-      // $re16='(\\.)'; # Any Single Character 1
-      // $re17='(\\d)'; # Any Single Digit 2
-      // $re18='(\\.)'; # Any Single Character 2
-      // $re19='(\\d)'; # Any Single Digit 3
-      // 
-      // var_dump($chunk);
-      // if(preg_match_all("/".$re1.$re2.$re3.$re4.$re5.$re6.$re7.$re8.$re9.$re10.$re11.$re12.$re13.$re14.$re15.$re16.$re17.$re18.$re19."/is", $chunk, $matches)) {
-      //   // $se=$matches[1][0];
-      //   var_dump($matches);
-      //   die;
-      // }
     }
   }
 
