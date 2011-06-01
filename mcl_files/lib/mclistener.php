@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 388)';
+  const VERSION = '0.2 (alpha build 389)';
 
   public $args = array();
   public $cli = null;
@@ -361,7 +361,12 @@ class MCListener
       // try to get an item as last resort
       if(array_key_exists($cmd, $this->system->itemmap) || array_key_exists($cmd, $this->system->kits) || is_numeric($cmd)) {
         // item map
-        $this->give($user, $cmd, count($params) ? $params[0] : null);
+        if($this->isAdmin($user)) {
+          // give items
+          $MCL->give($user, isset($params[0]) ? $params[0] : null, $amount);
+        } else {
+          $MCL->deny($user);
+        }
       } else {
         // nothing found
         $this->pm($user, 'The command > ' . $cmd . ' < is not known!');
