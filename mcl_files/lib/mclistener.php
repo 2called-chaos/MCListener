@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 377)';
+  const VERSION = '0.2 (alpha build 379)';
 
   public $args = array();
   public $cli = null;
@@ -232,11 +232,9 @@ class MCListener
   {
     if(!isset($this->args[1])) {
       $this->_init('base', false);
-      $cmd = 'screen -ls | egrep "(.*)\.' . $this->config->sysscreen . '[[:space:]](.*)"';
-      $result = trim(`$cmd`);
       
       // start
-      if(empty($result)) {
+      if(!$this->online('mcl')) {
         $this->log("MCListener isn't running, start...", 'notice');
         $this->fork(MC_PATH . '/mcl launch', $this->config->sysscreen);
       }
@@ -261,6 +259,7 @@ class MCListener
         case 'status':
           $this->_init('base', false);
           $this->log("%bMinecraft server seems to be " . ($this->online() ? '%gONLINE' : '%rOFFLINE'), 'notice');
+          $this->log("%bMCListener seems to be " . ($this->online('mcl') ? '%gONLINE' : '%rOFFLINE'), 'notice');
           return 'exit';
         break;
 
@@ -294,10 +293,8 @@ class MCListener
         
         case 'halt':
           $this->_init('base', false);
-          $cmd = 'screen -ls | egrep "(.*)\.' . $this->config->sysscreen . '[[:space:]](.*)"';
-          $result = trim(`$cmd`);
-          
-          if(empty($result)) {
+        
+          if(!$this->online('mcl')) {
             $this->log("Couldn't stop (isn't running)!", 'fatal');
             return 'exit';
           }
@@ -307,14 +304,11 @@ class MCListener
           file_put_contents(MC_PATH . '/mcl_files/tmp/halt', 'halt');
           
           while(true) {
-            $cmd = 'screen -ls | egrep "(.*)\.' . $this->config->sysscreen . '[[:space:]](.*)"';
-            $result = trim(`$cmd`);
-            
             if($counter > 10) {
               $this->log('Failed halt...', 'fatal');
             }
             
-            if(empty($result)) {
+            if(!$this->online('mcl')) {
               break;
             } else {
               sleep(1);
@@ -360,10 +354,20 @@ class MCListener
   // ==================
   // = daemon related =
   // ==================
-  public function online()
+  public function online($mode = 'minecraft')
   {
-    clearstatcache();
-    return file_exists(MC_PATH . '/server.log.lck');
+    switch($mode) {
+      case 'minecraft':
+        clearstatcache();
+        return file_exists(MC_PATH . '/server.log.lck');      
+      break;
+      
+      case 'mcl':
+        $cmd = 'screen -ls | egrep "(.*)\.' . $this->config->sysscreen . '[[:space:]](.*)"';
+        $result = trim(`$cmd`);
+        return empty($result);
+      break;
+    }
   }
 
   public function display()
