@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 386)';
+  const VERSION = '0.2 (alpha build 388)';
 
   public $args = array();
   public $cli = null;
@@ -67,8 +67,6 @@ class MCListener
     $this->system->mcllog = null;
     $this->system->serverVersion = null;
 
-    $this->tmp->admins = array('2called_chaos', 'DvdRom', 'Wo0T', 'Earl');
-    $this->tmp->trusted = array('i81u812');
     $this->system->playerSettings = array();
   }
 
@@ -94,6 +92,17 @@ class MCListener
     $this->config->delay = $this->config->delay * 1000000;
     $this->config->minecraft_dir = MC_PATH;
     $this->config->mcl_dir = $this->config->minecraft_dir . '/mcl_files';
+
+    // add admins & trusted players
+    $this->tmp->admins = array();    
+    $this->tmp->trusted = array();
+    
+    foreach(explode(',', $this->config->admins) as $admin) {
+      $this->tmp->admins[] = trim($admin);
+    }
+    foreach(explode(',', $this->config->trusted) as $trusted) {
+      $this->tmp->trusted[] = trim($trusted);
+    }
   }
 
   protected function _filterConfig($str)
