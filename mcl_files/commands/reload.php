@@ -8,7 +8,7 @@ if(!function_exists('CMD_reload')) {
     if($MCL->isAdmin($user)) {
       $MCL->pm($user, 'Will reload script config!');
       $MCL->log('##### RELOAD #####');
-      $MCL->tmp->rehash = true;
+      file_put_contents(MC_PATH . '/mcl_files/tmp/reload', 'reload');
     } else {
       $MCL->deny($user);
     }

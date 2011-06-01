@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 379)';
+  const VERSION = '0.2 (alpha build 382)';
 
   public $args = array();
   public $cli = null;
@@ -289,6 +289,13 @@ class MCListener
         
         case 'launch':
           return;
+        break;
+        
+        case 'reload':
+          $this->_init('base', false);
+          $this->log('Will reload...', 'notice');
+          file_put_contents(MC_PATH . '/mcl_files/tmp/reload', 'reload');   
+          return 'exit';       
         break;
         
         case 'halt':
@@ -664,8 +671,9 @@ class MCListener
 
   protected function _listeners()
   {
-    // rehash script
-    if(isset($this->tmp->rehash)) {
+    if(file_exists(MC_PATH . '/mcl_files/tmp/reload')) {
+      $this->log('Getting reload signal! Will reload now...', 'notice');
+      unlink(MC_PATH . '/mcl_files/tmp/reload');
       break;
     }
     
