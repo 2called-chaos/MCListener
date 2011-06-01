@@ -326,7 +326,7 @@ class MCListener
         break;
         
         default:
-          $this->log('No valid argument passed! Use: start [force/watch] / stop [force/warn] / restart [warn] / status / watch / halt / launch', 'fatal');
+          $this->log('No valid argument passed! Use: start [force/watch] / stop [force/warn] / restart [warn] / status / watch / halt / launch / reload', 'fatal');
           return 'exit';
         break;
       }
