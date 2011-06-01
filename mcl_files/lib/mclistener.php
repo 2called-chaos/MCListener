@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.2 (alpha build 384)';
+  const VERSION = '0.2 (alpha build 386)';
 
   public $args = array();
   public $cli = null;
@@ -232,22 +232,28 @@ class MCListener
   {
     if(!isset($this->args[1])) {
       $this->_init('base', false);
+      $started = false;
       
       // start
       if(!$this->online('mcl')) {
         $this->log("MCListener isn't running, start...", 'notice');
         $this->fork(MC_PATH . '/mcl launch', $this->config->sysscreen);
+        $started = true;
       }
       
       // reattach
-      $this->log("Screen will be reattached. Press Ctrl+A Ctrl+D to detach...", 'notice', false);
-      if($this->config->fastScreenAttach == 'yes') {
-        usleep(500000);
-      } else {
-        sleep(3);
+      if($this->config->displayOnLaunch == 'yes' || !$started) {
+        $this->log("Screen will be reattached. Press Ctrl+A Ctrl+D to detach...", 'notice', false);
+        if($this->config->fastScreenAttach == 'yes') {
+          usleep(500000);
+        } else {
+          sleep(3);
+        }
+
+        $cmd = 'screen -r ' . $this->config->sysscreen; `$cmd`;
       }
       
-      $cmd = 'screen -r ' . $this->config->sysscreen; `$cmd`;
+      $this->cli->send('');
       die;
     }
   }
@@ -425,7 +431,7 @@ class MCListener
     `$cmd`; sleep(1);
     $this->cli->sendf("%gDONE!%n");
 
-    if($this->config->server->displayOnLaunch == 'yes' || $force == 'watch') {
+    if($this->config->displayOnLaunch == 'yes' || $force == 'watch') {
       $this->display();
     }
   }
@@ -498,10 +504,10 @@ class MCListener
         $this->say('Server will restart in NOW!');
       }
 
-      $this->stop();
+      $this->stop('force');
     }
 
-    $this->launch('force');
+    $this->launch();
   }
 
   public function update($warn = false)
