@@ -7,7 +7,7 @@
 */
 class MCListener
 {
-  const VERSION = '0.4 (alpha build 390)';
+  const VERSION = '0.4.1 (alpha build 391)';
 
   public $args = array();
   public $cli = null;
@@ -363,7 +363,7 @@ class MCListener
         // item map
         if($this->isAdmin($user)) {
           // give items
-          $this->give($user, isset($params[0]) ? $params[0] : null, $amount);
+          $this->give($user, $cmd, isset($params[0]) ? $params[0] : null);
         } else {
           $this->deny($user);
         }
